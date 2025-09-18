@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { Pericia, getStatusClass } from './Pericias';
+import type { Pericia } from '../types';
+import { getStatusClass } from './Pericias';
 import { XIcon } from './Icons';
 
 interface DetalhesModalProps {

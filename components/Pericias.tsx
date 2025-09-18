@@ -1,109 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusIcon } from './Icons';
 import DetalhesModal from './DetalhesModal';
+import type { Pericia } from '../types';
 
-export interface Pericia {
-  id: string;
-  cliente: string;
-  status: 'Em Andamento' | 'Concluído' | 'Pendente' | 'Arquivado';
-  abertura: string;
-  autor: string;
-  reu: string;
-  cidade: string;
-  vara: string;
-  descricao: string;
-  valorCausa: number;
-  honorarios: number;
-  pagamentosRecebidos: number;
+interface PericiasProps {
+  pericias: Pericia[];
+  isLoading: boolean;
+  error: string | null;
 }
-
-const initialPericias: Pericia[] = [
-  { 
-    id: '5050706-41.2022.8.21.0010', 
-    cliente: 'Tribunal de Justiça do RS', 
-    status: 'Em Andamento', 
-    abertura: '2023-10-26',
-    autor: 'João da Silva',
-    reu: 'Companhia de Energia Elétrica S.A.',
-    cidade: 'Porto Alegre',
-    vara: '1ª Vara Cível',
-    descricao: 'Análise de medição de consumo de energia em unidade residencial após alegação de faturamento incorreto.',
-    valorCausa: 15000.00,
-    honorarios: 3500.00,
-    pagamentosRecebidos: 1750.00
-  },
-  { 
-    id: '5001234-56.2023.8.21.0008', 
-    cliente: 'Empresa de Energia XYZ', 
-    status: 'Concluído', 
-    abertura: '2023-09-15',
-    autor: 'Maria Oliveira',
-    reu: 'Construtora Predial Ltda.',
-    cidade: 'Canoas',
-    vara: '3ª Vara Cível',
-    descricao: 'Verificação de nexo causal entre obra civil e danos à rede de distribuição subterrânea.',
-    valorCausa: 120000.00,
-    honorarios: 8000.00,
-    pagamentosRecebidos: 8000.00
-  },
-  { 
-    id: '5098765-43.2023.8.21.0019', 
-    cliente: 'Advocacia & Associados', 
-    status: 'Concluído', 
-    abertura: '2023-08-01',
-    autor: 'Carlos Pereira',
-    reu: 'Seguradora Confiança S.A.',
-    cidade: 'Novo Hamburgo',
-    vara: '2ª Vara Empresarial',
-    descricao: 'Investigação de sinistro de incêndio em instalação industrial para apuração de causa elétrica.',
-    valorCausa: 500000.00,
-    honorarios: 15000.00,
-    pagamentosRecebidos: 15000.00
-  },
-  { 
-    id: '5011223-34.2023.8.21.0023', 
-    cliente: 'Condomínio Residencial Central', 
-    status: 'Pendente', 
-    abertura: '2023-11-05',
-    autor: 'Condomínio Residencial Central',
-    reu: 'Instaladora Elétrica Rápida',
-    cidade: 'São Leopoldo',
-    vara: 'Vara Única',
-    descricao: 'Auditoria de conformidade da instalação elétrica do condomínio com as normas NBR 5410.',
-    valorCausa: 25000.00,
-    honorarios: 4500.00,
-    pagamentosRecebidos: 0.00
-  },
-  { 
-    id: '5022334-45.2022.8.21.0021', 
-    cliente: 'Indústria Metalúrgica do Sul', 
-    status: 'Arquivado', 
-    abertura: '2022-07-20',
-    autor: 'Ministério Público do Trabalho',
-    reu: 'Indústria Metalúrgica do Sul',
-    cidade: 'Caxias do Sul',
-    vara: '1ª Vara do Trabalho',
-    descricao: 'Análise de acidente de trabalho envolvendo choque elétrico e conformidade com a NR-10.',
-    valorCausa: 75000.00,
-    honorarios: 6000.00,
-    pagamentosRecebidos: 6000.00
-  },
-  { 
-    id: '5033445-56.2023.8.21.0048', 
-    cliente: 'Tribunal de Justiça do RS', 
-    status: 'Em Andamento', 
-    abertura: '2023-11-01',
-    autor: 'José Santos',
-    reu: 'Fabricante de Equipamentos Eletrônicos Ltda.',
-    cidade: 'Pelotas',
-    vara: '4ª Vara Cível',
-    descricao: 'Análise de falha em equipamento eletrônico de alto valor, supostamente causada por defeito de fabricação.',
-    valorCausa: 45000.00,
-    honorarios: 5000.00,
-    pagamentosRecebidos: 2500.00
-  },
-];
 
 export const getStatusClass = (status: string) => {
   switch (status) {
@@ -120,9 +25,13 @@ export const getStatusClass = (status: string) => {
   }
 };
 
-const Pericias: React.FC = () => {
-  const [pericias, setPericias] = useState<Pericia[]>(initialPericias);
+const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
+  const [periciasList, setPericiasList] = useState<Pericia[]>(pericias);
   const [selectedPericia, setSelectedPericia] = useState<Pericia | null>(null);
+
+  useEffect(() => {
+    setPericiasList(pericias);
+  }, [pericias]);
 
   const handleOpenModal = (pericia: Pericia) => {
     setSelectedPericia(pericia);
@@ -133,10 +42,71 @@ const Pericias: React.FC = () => {
   };
 
   const handleSavePericia = (updatedPericia: Pericia) => {
-    setPericias(prevPericias =>
-      prevPericias.map(p => (p.id === updatedPericia.id ? updatedPericia : p))
-    );
+    // This updates the local state for immediate feedback.
+    // In a real app, you'd also send this update to the backend.
+    const updatedList = periciasList.map(p => (p.id === updatedPericia.id ? updatedPericia : p));
+    setPericiasList(updatedList);
   };
+  
+  const renderTableContent = () => {
+    if (isLoading) {
+      return (
+        <tr>
+          <td colSpan={5} className="text-center p-8 text-brand-gray">
+            <div className="flex justify-center items-center space-x-2">
+              <svg className="animate-spin h-5 w-5 text-brand-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Conectando ao banco e buscando dados...</span>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    if (error) {
+      return (
+        <tr>
+          <td colSpan={5} className="text-center p-8 text-red-400">
+            {error}
+          </td>
+        </tr>
+      );
+    }
+    
+    if (periciasList.length === 0) {
+      return (
+        <tr>
+          <td colSpan={5} className="text-center p-8 text-brand-gray">
+            Nenhuma perícia encontrada. A tabela está vazia.
+          </td>
+        </tr>
+      );
+    }
+
+    return periciasList.map((pericia) => (
+      <tr key={pericia.id} className="hover:bg-gray-800/60 transition-colors duration-200">
+        <td className="p-4 text-brand-gray font-mono text-sm">{pericia.id}</td>
+        <td className="p-4 text-brand-light text-sm">{pericia.cliente}</td>
+        <td className="p-4">
+          <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusClass(pericia.status)}`}>
+            {pericia.status}
+          </span>
+        </td>
+        <td className="p-4 text-brand-gray text-sm">{new Date(pericia.abertura).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+        <td className="p-4 text-center">
+          <button 
+            onClick={() => handleOpenModal(pericia)}
+            className="text-brand-cyan-400 hover:text-white font-semibold py-1 px-3 rounded-md transition duration-300 hover:bg-brand-cyan-500/50 border border-brand-cyan-400/50 hover:border-brand-cyan-400 text-sm"
+          >
+            Ver Detalhes
+          </button>
+        </td>
+      </tr>
+    ));
+  };
+
 
   return (
     <>
@@ -166,33 +136,16 @@ const Pericias: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
-                {pericias.map((pericia) => (
-                  <tr key={pericia.id} className="hover:bg-gray-800/60 transition-colors duration-200">
-                    <td className="p-4 text-brand-gray font-mono text-sm">{pericia.id}</td>
-                    <td className="p-4 text-brand-light text-sm">{pericia.cliente}</td>
-                    <td className="p-4">
-                      <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusClass(pericia.status)}`}>
-                        {pericia.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-brand-gray text-sm">{new Date(pericia.abertura).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                    <td className="p-4 text-center">
-                      <button 
-                        onClick={() => handleOpenModal(pericia)}
-                        className="text-brand-cyan-400 hover:text-white font-semibold py-1 px-3 rounded-md transition duration-300 hover:bg-brand-cyan-500/50 border border-brand-cyan-400/50 hover:border-brand-cyan-400 text-sm"
-                      >
-                        Ver Detalhes
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {renderTableContent()}
               </tbody>
             </table>
           </div>
         </div>
-        <p className="text-center text-brand-gray text-sm mt-8">
-          Esta é uma visualização de exemplo. Os dados são fictícios.
-        </p>
+        {!isLoading && !error && periciasList.length > 0 && (
+            <p className="text-center text-brand-gray text-sm mt-8">
+              Dados carregados do sistema.
+            </p>
+        )}
       </main>
 
       {selectedPericia && (
