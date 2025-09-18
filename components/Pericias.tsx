@@ -18,7 +18,7 @@ export interface Pericia {
   pagamentosRecebidos: number;
 }
 
-const mockPericias: Pericia[] = [
+const initialPericias: Pericia[] = [
   { 
     id: '5050706-41.2022.8.21.0010', 
     cliente: 'Tribunal de Justiça do RS', 
@@ -105,7 +105,7 @@ const mockPericias: Pericia[] = [
   },
 ];
 
-const getStatusClass = (status: string) => {
+export const getStatusClass = (status: string) => {
   switch (status) {
     case 'Em Andamento':
       return 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/30';
@@ -121,6 +121,7 @@ const getStatusClass = (status: string) => {
 };
 
 const Pericias: React.FC = () => {
+  const [pericias, setPericias] = useState<Pericia[]>(initialPericias);
   const [selectedPericia, setSelectedPericia] = useState<Pericia | null>(null);
 
   const handleOpenModal = (pericia: Pericia) => {
@@ -129,6 +130,12 @@ const Pericias: React.FC = () => {
 
   const handleCloseModal = () => {
     setSelectedPericia(null);
+  };
+
+  const handleSavePericia = (updatedPericia: Pericia) => {
+    setPericias(prevPericias =>
+      prevPericias.map(p => (p.id === updatedPericia.id ? updatedPericia : p))
+    );
   };
 
   return (
@@ -159,7 +166,7 @@ const Pericias: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
-                {mockPericias.map((pericia) => (
+                {pericias.map((pericia) => (
                   <tr key={pericia.id} className="hover:bg-gray-800/60 transition-colors duration-200">
                     <td className="p-4 text-brand-gray font-mono text-sm">{pericia.id}</td>
                     <td className="p-4 text-brand-light text-sm">{pericia.cliente}</td>
@@ -192,6 +199,7 @@ const Pericias: React.FC = () => {
         <DetalhesModal 
           pericia={selectedPericia}
           onClose={handleCloseModal}
+          onSave={handleSavePericia}
         />
       )}
     </>
