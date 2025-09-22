@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import type { Pericia } from '../types';
 import { getStatusClass } from './Pericias';
@@ -21,12 +20,11 @@ const DetalhesModal: React.FC<DetalhesModalProps> = ({ pericia, onClose, onSave 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Pericia>(pericia);
 
-  // Sync formData if the initial pericia prop changes (e.g., when opening a different item)
   useEffect(() => {
     setFormData(pericia);
+    setIsEditing(false); // Reset edit mode when a new pericia is selected
   }, [pericia]);
 
-  // Effect for Escape key and body overflow
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -43,189 +41,167 @@ const DetalhesModal: React.FC<DetalhesModalProps> = ({ pericia, onClose, onSave 
   }, [onClose]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const isNumberInput = type === 'number';
+    const { name, value, type } = e.target as HTMLInputElement;
     setFormData(prev => ({
       ...prev,
-      [name]: isNumberInput ? parseFloat(value) || 0 : value,
+      [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
 
-  const handleSave = () => {
+  const handleSaveClick = () => {
     onSave(formData);
-    setIsEditing(false);
+    onClose();
   };
 
-  const handleCancel = () => {
-    setFormData(pericia);
+  const handleCancelClick = () => {
     setIsEditing(false);
+    setFormData(pericia);
   };
+  
+  const renderField = (label: string, name: keyof Pericia, type: string = 'text', isCurrency: boolean = false) => {
+    const value = formData[name];
+
+    if (isEditing) {
+      if (type === 'textarea') {
+        return (
+          <div>
+            <label className="block text-xs font-bold text-brand-gray uppercase mb-1">{label}</label>
+            <textarea
+              name={name}
+              value={formData[name] as string}
+              onChange={handleChange}
+              rows={4}
+              className="w-full bg-brand-dark border border-gray-600 rounded-md px-3 py-2 text-brand-light text-sm focus:ring-brand-cyan-500 focus:border-brand-cyan-500 transition"
+            />
+          </div>
+        )
+      }
+      return (
+         <div>
+          <label className="block text-xs font-bold text-brand-gray uppercase mb-1">{label}</label>
+          <input
+            type={type}
+            name={name}
+            value={formData[name] as string | number}
+            onChange={handleChange}
+            className="w-full bg-brand-dark border border-gray-600 rounded-md px-3 py-2 text-brand-light text-sm focus:ring-brand-cyan-500 focus:border-brand-cyan-500 transition"
+          />
+        </div>
+      )
+    }
+
+    return (
+       <div>
+        <label className="block text-xs font-bold text-brand-gray uppercase mb-1">{label}</label>
+        <p className="text-brand-light text-sm whitespace-pre-wrap min-h-[2.1rem] pt-2">
+            {isCurrency ? formatCurrency(value as number) : value}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4 animate-fade-in"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
       onClick={onClose}
+      aria-modal="true"
+      role="dialog"
     >
       <div 
-        className="bg-brand-dark-secondary rounded-lg shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] border border-gray-700/50 transform animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-brand-dark-secondary rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-700/50"
+        onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-6 border-b border-gray-700/50 sticky top-0 bg-brand-dark-secondary z-10">
-          <div className="flex items-center gap-4">
-            <h2 id="modal-title" className="text-2xl font-bold text-white">Detalhes do Processo</h2>
-            {!isEditing && (
-              <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusClass(formData.status)}`}>
-                {formData.status}
-              </span>
-            )}
+        <div className="p-6 border-b border-gray-700/50 flex justify-between items-center sticky top-0 bg-brand-dark-secondary z-10">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Detalhes da Perícia</h2>
+            <p className="text-brand-gray font-mono text-sm">Processo Nº {pericia.id}</p>
           </div>
-          <button 
-            onClick={onClose} 
-            className="text-brand-gray hover:text-white transition-colors duration-200"
-            aria-label="Fechar modal"
-          >
+          <button onClick={onClose} aria-label="Fechar modal" className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-700/50">
             <XIcon />
           </button>
         </div>
         
-        <div className="overflow-y-auto">
-          <form className="p-8 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="form-group">
-                <label className="input-label">Número do Processo</label>
-                <input type="text" readOnly value={formData.id} className="input-field-readonly" />
-              </div>
-              <div className="form-group">
-                  <label className="input-label">Data Inicial</label>
-                  <input type={isEditing ? 'date' : 'text'} readOnly={!isEditing} name="abertura" value={isEditing ? formData.abertura : new Date(formData.abertura).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} onChange={handleChange} className={isEditing ? 'input-field-editable' : 'input-field-readonly'}/>
-              </div>
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-brand-gray uppercase mb-1">Cliente</label>
+              <p className="text-brand-light text-sm">{pericia.cliente}</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="form-group"><label className="input-label">Autor</label><input type="text" readOnly={!isEditing} name="autor" value={formData.autor} onChange={handleChange} className={isEditing ? 'input-field-editable' : 'input-field-readonly'} /></div>
-              <div className="form-group"><label className="input-label">Réu</label><input type="text" readOnly={!isEditing} name="reu" value={formData.reu} onChange={handleChange} className={isEditing ? 'input-field-editable' : 'input-field-readonly'} /></div>
+            <div>
+              <label className="block text-xs font-bold text-brand-gray uppercase mb-1">Status</label>
+              {isEditing ? (
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="w-full bg-brand-dark border border-gray-600 rounded-md px-3 py-2 text-brand-light text-sm focus:ring-brand-cyan-500 focus:border-brand-cyan-500 transition"
+                  >
+                    <option>Em Andamento</option>
+                    <option>Concluído</option>
+                    <option>Pendente</option>
+                    <option>Arquivado</option>
+                  </select>
+              ) : (
+                <span className={`inline-block mt-1 px-3 py-1 text-xs font-bold rounded-full ${getStatusClass(pericia.status)}`}>
+                  {pericia.status}
+                </span>
+              )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="form-group"><label className="input-label">Cidade</label><input type="text" readOnly={!isEditing} name="cidade" value={formData.cidade} onChange={handleChange} className={isEditing ? 'input-field-editable' : 'input-field-readonly'} /></div>
-              <div className="form-group"><label className="input-label">Vara</label><input type="text" readOnly={!isEditing} name="vara" value={formData.vara} onChange={handleChange} className={isEditing ? 'input-field-editable' : 'input-field-readonly'} /></div>
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="form-group">
-                    <label className="input-label">Cliente</label>
-                    <input type="text" readOnly={!isEditing} name="cliente" value={formData.cliente} onChange={handleChange} className={isEditing ? 'input-field-editable' : 'input-field-readonly'} />
-                </div>
-                <div className="form-group">
-                    <label className="input-label">Status</label>
-                    {isEditing ? (
-                    <select name="status" value={formData.status} onChange={handleChange} className="input-field-editable">
-                        <option value="Em Andamento">Em Andamento</option>
-                        <option value="Concluído">Concluído</option>
-                        <option value="Pendente">Pendente</option>
-                        <option value="Arquivado">Arquivado</option>
-                    </select>
-                    ) : (
-                    <input type="text" readOnly value={formData.status} className="input-field-readonly" />
-                    )}
-                </div>
-            </div>
-            <div className="form-group">
-                <label className="input-label">Descrição</label>
-                <textarea readOnly={!isEditing} name="descricao" value={formData.descricao} rows={4} onChange={handleChange} className={isEditing ? 'input-field-editable resize-y' : 'input-field-readonly resize-none'}></textarea>
-            </div>
-            <div className="border-t border-gray-700/50 pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="form-group"><label className="input-label">Valor da Causa</label>{isEditing ? (<input type="number" name="valorCausa" value={formData.valorCausa} onChange={handleChange} className="input-field-editable" />) : (<input type="text" readOnly value={formatCurrency(formData.valorCausa)} className="input-field-readonly" />)}</div>
-              <div className="form-group"><label className="input-label">Honorários Cobrados</label>{isEditing ? (<input type="number" name="honorarios" value={formData.honorarios} onChange={handleChange} className="input-field-editable" />) : (<input type="text" readOnly value={formatCurrency(formData.honorarios)} className="input-field-readonly" />)}</div>
-              <div className="form-group"><label className="input-label">Pagamentos Recebidos</label>{isEditing ? (<input type="number" name="pagamentosRecebidos" value={formData.pagamentosRecebidos} onChange={handleChange} className="input-field-editable" />) : (<input type="text" readOnly value={formatCurrency(formData.pagamentosRecebidos)} className="input-field-readonly" />)}</div>
-            </div>
-          </form>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderField('Autor', 'autor')}
+            {renderField('Réu', 'reu')}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderField('Cidade', 'cidade')}
+            {renderField('Vara', 'vara')}
+          </div>
+          
+          {renderField('Descrição', 'descricao', 'textarea')}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-700/50 pt-4">
+            {renderField('Valor da Causa', 'valorCausa', 'number', true)}
+            {renderField('Honorários', 'honorarios', 'number', true)}
+            {renderField('Pagamentos Recebidos', 'pagamentosRecebidos', 'number', true)}
+          </div>
         </div>
-        <div className="flex justify-end items-center p-6 border-t border-gray-700/50 mt-auto bg-brand-dark-secondary sticky bottom-0 z-10">
+
+        <div className="p-6 border-t border-gray-700/50 flex justify-end space-x-4 sticky bottom-0 bg-brand-dark-secondary z-10">
           {isEditing ? (
-            <div className="flex gap-4">
-              <button onClick={handleCancel} className="btn btn-secondary">Cancelar</button>
-              <button onClick={handleSave} className="btn btn-primary">Salvar Alterações</button>
-            </div>
+            <>
+              <button
+                onClick={handleCancelClick}
+                className="bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveClick}
+                className="bg-brand-cyan-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-brand-cyan-600 transition duration-300"
+              >
+                Salvar Alterações
+              </button>
+            </>
           ) : (
-            <button onClick={() => setIsEditing(true)} className="btn btn-primary">Editar</button>
+            <>
+              <button
+                onClick={onClose}
+                className="bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300"
+              >
+                Fechar
+              </button>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="bg-brand-cyan-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-brand-cyan-600 transition duration-300"
+              >
+                Editar
+              </button>
+            </>
           )}
         </div>
       </div>
-       <style>{`
-        .input-label {
-          display: block;
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: #a0aec0;
-          margin-bottom: 0.25rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-        .input-field-readonly, .input-field-editable {
-          width: 100%;
-          border-radius: 0.375rem;
-          padding: 0.5rem 0.75rem;
-          color: #e2e8f0;
-          font-size: 0.875rem;
-          font-family: inherit;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .input-field-readonly {
-          background-color: #1a202c;
-          border: 1px solid #4a5568;
-          cursor: default;
-        }
-        .input-field-editable {
-          background-color: #2d3748;
-          border: 1px solid #a0aec0;
-          cursor: text;
-        }
-        .input-field-editable:focus {
-          outline: none;
-          border-color: #06b6d4;
-          box-shadow: 0 0 0 1px #06b6d4;
-        }
-        .btn {
-          padding: 0.5rem 1.25rem;
-          border-radius: 0.375rem;
-          font-weight: 700;
-          transition: all 0.2s;
-          cursor: pointer;
-        }
-        .btn-primary {
-          background-color: #06b6d4;
-          color: white;
-          border: 1px solid #06b6d4;
-        }
-        .btn-primary:hover {
-          background-color: #0891b2;
-          border-color: #0891b2;
-        }
-        .btn-secondary {
-          background-color: transparent;
-          color: #a0aec0;
-          border: 1px solid #4a5568;
-        }
-        .btn-secondary:hover {
-          background-color: #4a5568;
-          color: white;
-        }
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out forwards;
-        }
-        @keyframes slide-in-up {
-          from { transform: translateY(20px) scale(0.98); opacity: 0; }
-          to { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        .animate-slide-in-up {
-          animation: slide-in-up 0.4s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };

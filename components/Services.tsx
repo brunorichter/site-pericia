@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FileTextIcon, ZapIcon, SearchIcon, ShieldIcon, BriefcaseIcon, CheckSquareIcon } from './Icons';
 

@@ -1,51 +1,48 @@
-
-<!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Richter - Perícia Técnica Judicial em Engenharia Elétrica</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'brand-dark': '#1a202c',
-              'brand-dark-secondary': '#2d3748',
-              'brand-cyan': {
-                '400': '#22d3ee',
-                '500': '#06b6d4',
-                '600': '#0891b2',
-              },
-              'brand-light': '#e2e8f0',
-              'brand-gray': '#a0aec0',
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Richter - Perícia Técnica Judicial em Engenharia Elétrica</title>
+  <meta name="description" content="A landing page for a judicial technical expertise service in electrical engineering based in Rio Grande do Sul, Brazil." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-dark': '#1a202c',
+            'brand-dark-secondary': '#2d3748',
+            'brand-cyan': {
+              '400': '#22d3ee',
+              '500': '#06b6d4',
+              '600': '#0891b2',
             },
-            fontFamily: {
-              sans: ['"Exo 2"', 'sans-serif'],
-            }
-          }
-        }
-      }
-    </script>
+            'brand-light': '#e2e8f0',
+            'brand-gray': '#a0aec0',
+          },
+          fontFamily: {
+            sans: ['"Exo 2"', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
   <script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.1.1/client",
+    "next/": "https://aistudiocdn.com/next@^15.5.3/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "next": "https://aistudiocdn.com/next@^15.5.3",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
   }
 }
 </script>
 </head>
-  <body class="bg-brand-dark">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
-</html>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>

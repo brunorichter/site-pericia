@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { PlusIcon } from './Icons';
 import DetalhesModal from './DetalhesModal';
@@ -42,8 +41,6 @@ const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
   };
 
   const handleSavePericia = (updatedPericia: Pericia) => {
-    // This updates the local state for immediate feedback.
-    // In a real app, you'd also send this update to the backend.
     const updatedList = periciasList.map(p => (p.id === updatedPericia.id ? updatedPericia : p));
     setPericiasList(updatedList);
   };
@@ -58,7 +55,7 @@ const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>Conectando ao banco e buscando dados...</span>
+              <span>Buscando dados...</span>
             </div>
           </td>
         </tr>
