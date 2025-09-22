@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Pericias from '../components/Pericias';
 import type { Pericia } from '../types';
+import { periciasMockData } from './api/pericias';
 
 const PericiasPage: React.FC = () => {
   const [periciasData, setPericiasData] = useState<Pericia[]>([]);
@@ -9,23 +10,21 @@ const PericiasPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadPericias = async () => {
+    const loadPericias = () => {
       setIsLoading(true);
       setError(null);
-      try {
-        const res = await fetch('/api/pericias');
-        if (!res.ok) {
-          throw new Error('Falha ao buscar os dados da API.');
+      // Simulate network delay for a better user experience
+      setTimeout(() => {
+        try {
+          setPericiasData(periciasMockData);
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.';
+          setError(`Falha ao carregar os dados. ${errorMessage}`);
+          console.error(err);
+        } finally {
+          setIsLoading(false);
         }
-        const data = await res.json();
-        setPericiasData(data);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.';
-        setError(`Falha ao buscar os dados. ${errorMessage}`);
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
+      }, 1000);
     };
     loadPericias();
   }, []);
