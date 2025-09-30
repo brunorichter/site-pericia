@@ -1,10 +1,11 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
 import type { Pericia } from '../../types';
 
-export const periciasMockData: Pericia[] = [
+const periciasMockData: Pericia[] = [
   {
     id: '00123/2023',
     cliente: 'Empresa de Energia Elétrica S.A.',
-    status: 'Fazer Laudo',
+    status: 'Em Andamento',
     abertura: '2023-10-26',
     autor: 'João da Silva',
     reu: 'Companhia de Seguros Confiança',
@@ -32,7 +33,7 @@ export const periciasMockData: Pericia[] = [
   {
     id: '00789/2024',
     cliente: 'Indústria Metalúrgica Pesada S.A.',
-    status: 'Aguardando',
+    status: 'Pendente',
     abertura: '2024-03-02',
     autor: 'Pedro Antunes (ex-funcionário)',
     reu: 'Indústria Metalúrgica Pesada S.A.',
@@ -43,7 +44,7 @@ export const periciasMockData: Pericia[] = [
     honorarios: 6200.00,
     pagamentosRecebidos: 0.00,
   },
-  {
+   {
     id: '01011/2022',
     cliente: 'Shopping Center Metrópole',
     status: 'Arquivado',
@@ -56,47 +57,15 @@ export const periciasMockData: Pericia[] = [
     valorCausa: 25000.00,
     honorarios: 2500.00,
     pagamentosRecebidos: 2500.00,
-  },
-  {
-    id: '00333/2024',
-    cliente: 'Tribunal de Justiça RS',
-    status: 'Fazer Honorários',
-    abertura: '2024-05-10',
-    autor: 'Maria Oliveira',
-    reu: 'Banco Nacional S.A.',
-    cidade: 'Caxias do Sul',
-    vara: '1ª Vara Cível Especializada',
-    descricao: 'Análise de equipamentos eletrônicos bancários para verificar alegação de falha de segurança. Laudo técnico inicial foi entregue, aguardando definição e pagamento dos honorários periciais.',
-    valorCausa: 250000.00,
-    honorarios: 12000.00,
-    pagamentosRecebidos: 0.00,
-  },
-  {
-    id: '00555/2023',
-    cliente: 'Advocacia Souza & Ramos',
-    status: 'Contestação Valor',
-    abertura: '2023-11-05',
-    autor: 'Fábrica de Calçados Pé-Leve',
-    reu: 'Distribuidora de Energia Regional',
-    cidade: 'Novo Hamburgo',
-    vara: '4ª Vara Cível',
-    descricao: 'Quesitos sobre a causa de um incêndio em instalação industrial. O valor dos honorários foi contestado pela parte ré. Aguardando decisão do juiz sobre a impugnação.',
-    valorCausa: 500000.00,
-    honorarios: 25000.00,
-    pagamentosRecebidos: 0.00,
-  },
-  {
-    id: '00678/2024',
-    cliente: 'Seguradora Proteção Total',
-    status: 'Esclarecimentos',
-    abertura: '2024-02-22',
-    autor: 'Seguradora Proteção Total',
-    reu: 'José Carlos Pereira',
-    cidade: 'Pelotas',
-    vara: '5ª Vara Cível',
-    descricao: 'Análise de sinistro em residência por suposta sobrecarga na rede elétrica. Laudo entregue, e as partes solicitaram esclarecimentos sobre pontos técnicos específicos.',
-    valorCausa: 75000.00,
-    honorarios: 5500.00,
-    pagamentosRecebidos: 5500.00,
   }
 ];
+
+export default function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Pericia[]>
+) {
+  // Simulate network delay
+  setTimeout(() => {
+    res.status(200).json(periciasMockData);
+  }, 1000);
+}

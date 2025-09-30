@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { Pericia, PericiaStatus } from '../types';
+import type { Pericia } from '../types';
 import { getStatusClass } from './Pericias';
 import { XIcon } from './Icons';
 
@@ -15,16 +15,6 @@ const formatCurrency = (value: number) => {
     currency: 'BRL',
   }).format(value);
 };
-
-const statusOptions: PericiaStatus[] = [
-  'Aguardando',
-  'Fazer Laudo',
-  'Fazer Honorários',
-  'Contestação Valor',
-  'Esclarecimentos',
-  'Concluído',
-  'Arquivado',
-];
 
 const DetalhesModal: React.FC<DetalhesModalProps> = ({ pericia, onClose, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -146,7 +136,10 @@ const DetalhesModal: React.FC<DetalhesModalProps> = ({ pericia, onClose, onSave 
                     onChange={handleChange}
                     className="w-full bg-brand-dark border border-gray-600 rounded-md px-3 py-2 text-brand-light text-sm focus:ring-brand-cyan-500 focus:border-brand-cyan-500 transition"
                   >
-                    {statusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    <option>Em Andamento</option>
+                    <option>Concluído</option>
+                    <option>Pendente</option>
+                    <option>Arquivado</option>
                   </select>
               ) : (
                 <span className={`inline-block mt-1 px-3 py-1 text-xs font-bold rounded-full ${getStatusClass(pericia.status)}`}>
@@ -180,24 +173,32 @@ const DetalhesModal: React.FC<DetalhesModalProps> = ({ pericia, onClose, onSave 
             <>
               <button
                 onClick={handleCancelClick}
-                className="bg-gray-600 hover:bg-gray-700 text-brand-light font-bold py-2 px-6 rounded-lg transition duration-300"
+                className="bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveClick}
-                className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 shadow-md"
+                className="bg-brand-cyan-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-brand-cyan-600 transition duration-300"
               >
                 Salvar Alterações
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 shadow-md"
-            >
-              Editar
-            </button>
+            <>
+              <button
+                onClick={onClose}
+                className="bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300"
+              >
+                Fechar
+              </button>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="bg-brand-cyan-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-brand-cyan-600 transition duration-300"
+              >
+                Editar
+              </button>
+            </>
           )}
         </div>
       </div>
