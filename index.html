@@ -12,28 +12,10 @@
       scroll-behavior: smooth;
     }
   </style>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'brand-dark': '#1a202c',
-            'brand-dark-secondary': '#2d3748',
-            'brand-cyan': {
-              '400': '#22d3ee',
-              '500': '#06b6d4',
-              '600': '#0891b2',
-            },
-            'brand-light': '#e2e8f0',
-            'brand-gray': '#a0aec0',
-          },
-          fontFamily: {
-            sans: ['"Exo 2"', 'sans-serif'],
-          },
-        },
-      },
-    }
-  </script>
+  <!-- Removido o script de configuração inline do Tailwind. 
+  O Tailwind irá buscar as configurações do arquivo tailwind.config.js durante o build. 
+  Certifique-se de que o arquivo tailwind.config.js está corretamente configurado na raiz do seu projeto 
+  e que você está usando um processo de build (ex: PostCSS, Vite, Webpack, etc) para gerar o CSS final. -->
   <script type="importmap">
 {
   "imports": {

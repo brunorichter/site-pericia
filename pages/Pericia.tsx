@@ -16,7 +16,7 @@ const PericiasPage: React.FC = () => {
       // Simulate network delay for a better user experience
       setTimeout(() => {
         try {
-          setPericiasData(periciasMockData);
+          //setPericiasData(periciasMockData);
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.';
           setError(`Falha ao carregar os dados. ${errorMessage}`);
@@ -36,5 +36,18 @@ const PericiasPage: React.FC = () => {
     </div>
   );
 };
-
+export function getStatusClass(status: string): string {
+  switch (status) {
+    case "Em Andamento":
+      return "bg-yellow-500 text-white";
+    case "Concluído":
+      return "bg-green-500 text-white";
+    case "Pendente":
+      return "bg-red-500 text-white";
+    case "Arquivado":
+      return "bg-gray-500 text-white";
+    default:
+      return "bg-gray-300 text-black";
+  }
+}
 export default PericiasPage;

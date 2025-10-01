@@ -76,3 +76,7 @@ export const XIcon: React.FC = () => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
 );
+
+export default function IconsPage() {
+  return null; // página “vazia” só para satisfazer o Next
+}

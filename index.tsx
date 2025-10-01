@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import HomePage from './pages/index';
-import PericiasPage from './pages/pericias';
+import PericiasPage from './pages/Pericia';
 
 const App: React.FC = () => {
     const [path, setPath] = useState(window.location.pathname);

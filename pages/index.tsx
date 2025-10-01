@@ -7,7 +7,7 @@ import Services from '../components/Services';
 import Area from '../components/Area';
 import Contact from '../components/Contact';
 
-const HomePage: React.FC = () => {
+export default function HomePage() {
   return (
     <div className="bg-brand-dark text-brand-light min-h-screen font-sans">
       <Header />
@@ -21,6 +21,4 @@ const HomePage: React.FC = () => {
       <Footer />
     </div>
   );
-};
-
-export default HomePage;
+}

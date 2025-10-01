@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MailIcon, PhoneIcon } from '../components/Icons';
 
@@ -12,6 +13,7 @@ const Contact: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Here you would typically handle form submission to a backend
     setStatus('Obrigado! Sua mensagem foi enviada com sucesso.');
     setFormData({ name: '', email: '', message: '' });
     setTimeout(() => setStatus(''), 5000);
@@ -75,18 +77,18 @@ const Contact: React.FC = () => {
             </form>
           </div>
           <div className="md:w-1/2 flex flex-col justify-center space-y-6">
-              <div className="flex items-start p-6 bg-brand-dark-secondary rounded-lg">
+             <div className="flex items-start p-6 bg-brand-dark-secondary rounded-lg">
                 <div className="text-brand-cyan-400 mt-1 mr-4"><MailIcon /></div>
                 <div>
                   <h3 className="text-xl font-bold text-white">Email</h3>
-                  <p className="text-brand-gray">bruno@richter.eng.br</p>
+                  <p className="text-brand-gray">contato@richterpericia.com.br</p>
                 </div>
             </div>
             <div className="flex items-start p-6 bg-brand-dark-secondary rounded-lg">
                 <div className="text-brand-cyan-400 mt-1 mr-4"><PhoneIcon /></div>
                 <div>
                   <h3 className="text-xl font-bold text-white">Telefone / WhatsApp</h3>
-                  <p className="text-brand-gray">(51) 99633-8120</p>
+                  <p className="text-brand-gray">(51) 99999-8888</p>
                 </div>
             </div>
           </div>
