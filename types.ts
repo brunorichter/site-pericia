@@ -1,16 +1,7 @@
-export type PericiaStatus =
-  | 'Aguardando'
-  | 'Fazer Laudo'
-  | 'Fazer Honorários'
-  | 'Contestação Valor'
-  | 'Esclarecimentos'
-  | 'Concluído'
-  | 'Arquivado';
-
 export interface Pericia {
   id: string;
   cliente: string;
-  status: PericiaStatus;
+  status: 'Em Andamento' | 'Concluído' | 'Pendente' | 'Arquivado';
   abertura: string;
   autor: string;
   reu: string;

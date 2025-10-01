@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon } from './Icons';
 import DetalhesModal from './DetalhesModal';
-import type { Pericia, PericiaStatus } from '../types';
+import type { Pericia } from '../types';
 
 interface PericiasProps {
   pericias: Pericia[];
@@ -9,32 +9,19 @@ interface PericiasProps {
   error: string | null;
 }
 
-export const getStatusClass = (status: PericiaStatus) => {
+export const getStatusClass = (status: string) => {
   switch (status) {
-    case 'Aguardando':
+    case 'Em Andamento':
       return 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/30';
-    case 'Fazer Laudo':
-      return 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/30';
-    case 'Fazer Honorários':
-      return 'bg-indigo-400/20 text-indigo-300 border border-indigo-400/30';
-    case 'Contestação Valor':
-      return 'bg-red-400/20 text-red-300 border border-red-400/30';
-    case 'Esclarecimentos':
-      return 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30';
     case 'Concluído':
       return 'bg-green-400/20 text-green-300 border border-green-400/30';
+    case 'Pendente':
+      return 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/30';
     case 'Arquivado':
       return 'bg-gray-400/20 text-gray-300 border border-gray-400/30';
     default:
       return 'bg-gray-200/20 text-gray-300 border border-gray-200/30';
   }
-};
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
 };
 
 const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
@@ -62,7 +49,7 @@ const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
     if (isLoading) {
       return (
         <tr>
-          <td colSpan={10} className="text-center p-8 text-brand-gray">
+          <td colSpan={5} className="text-center p-8 text-brand-gray">
             <div className="flex justify-center items-center space-x-2">
               <svg className="animate-spin h-5 w-5 text-brand-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -78,7 +65,7 @@ const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
     if (error) {
       return (
         <tr>
-          <td colSpan={10} className="text-center p-8 text-red-400">
+          <td colSpan={5} className="text-center p-8 text-red-400">
             {error}
           </td>
         </tr>
@@ -88,7 +75,7 @@ const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
     if (periciasList.length === 0) {
       return (
         <tr>
-          <td colSpan={10} className="text-center p-8 text-brand-gray">
+          <td colSpan={5} className="text-center p-8 text-brand-gray">
             Nenhuma perícia encontrada. A tabela está vazia.
           </td>
         </tr>
@@ -98,24 +85,19 @@ const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
     return periciasList.map((pericia) => (
       <tr key={pericia.id} className="hover:bg-gray-800/60 transition-colors duration-200">
         <td className="p-4 text-brand-gray font-mono text-sm">{pericia.id}</td>
-        <td className="p-4 text-brand-light text-sm">{pericia.autor}</td>
-        <td className="p-4 text-brand-light text-sm">{pericia.reu}</td>
-        <td className="p-4 text-brand-gray text-sm">{pericia.cidade}</td>
-        <td className="p-4 text-brand-gray text-sm max-w-[200px] truncate" title={pericia.descricao}>{pericia.descricao}</td>
-        <td className="p-4 text-brand-light text-sm text-right font-mono">{formatCurrency(pericia.valorCausa)}</td>
-        <td className="p-4 text-brand-light text-sm text-right font-mono">{formatCurrency(pericia.honorarios)}</td>
-        <td className="p-4 text-brand-light text-sm text-right font-mono">{formatCurrency(pericia.pagamentosRecebidos)}</td>
+        <td className="p-4 text-brand-light text-sm">{pericia.cliente}</td>
         <td className="p-4">
-          <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusClass(pericia.status)} whitespace-nowrap`}>
+          <span className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusClass(pericia.status)}`}>
             {pericia.status}
           </span>
         </td>
+        <td className="p-4 text-brand-gray text-sm">{new Date(pericia.abertura).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
         <td className="p-4 text-center">
           <button 
             onClick={() => handleOpenModal(pericia)}
             className="text-brand-cyan-400 hover:text-white font-semibold py-1 px-3 rounded-md transition duration-300 hover:bg-brand-cyan-500/50 border border-brand-cyan-400/50 hover:border-brand-cyan-400 text-sm"
           >
-            Detalhes
+            Ver Detalhes
           </button>
         </td>
       </tr>
@@ -140,18 +122,13 @@ const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
         
         <div className="bg-brand-dark-secondary rounded-lg shadow-lg overflow-hidden border border-gray-700/50">
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[1200px]">
+            <table className="w-full text-left min-w-[700px]">
               <thead className="bg-gray-800/50">
                 <tr>
                   <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Nº Processo</th>
-                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Autor</th>
-                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Réu</th>
-                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Cidade</th>
-                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Assunto</th>
-                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs text-right">Valor da Causa</th>
-                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs text-right">Honorários</th>
-                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs text-right">Total Pago</th>
+                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Cliente</th>
                   <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Status</th>
+                  <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs">Data de Abertura</th>
                   <th className="p-4 font-semibold text-brand-light tracking-wider uppercase text-xs text-center">Ações</th>
                 </tr>
               </thead>

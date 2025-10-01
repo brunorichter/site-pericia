@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Pericias from '../components/Pericias';
 import type { Pericia } from '../types';
-import { periciasMockData } from './api/pericias';
 
 const PericiasPage: React.FC = () => {
   const [periciasData, setPericiasData] = useState<Pericia[]>([]);
@@ -10,7 +9,7 @@ const PericiasPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadPericias = () => {
+    const loadPericias = async () => {
       setIsLoading(true);
       setError(null);
       // Simulate network delay for a better user experience

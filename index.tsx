@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import HomePage from './pages/index';
 import PericiasPage from './pages/Pericia';
@@ -74,7 +74,7 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <App />
+      <HomePage />
     </React.StrictMode>
   );
 }
