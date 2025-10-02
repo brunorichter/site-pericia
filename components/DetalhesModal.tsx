@@ -207,3 +207,4 @@ const DetalhesModal: React.FC<DetalhesModalProps> = ({ pericia, onClose, onSave 
 };
 
 export default DetalhesModal;
+

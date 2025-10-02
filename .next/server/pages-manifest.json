@@ -1,6 +1,1 @@
-{
-  "/_app": "pages/_app.js",
-  "/_error": "pages/_error.js",
-  "/_document": "pages/_document.js",
-  "/": "pages/index.js"
-}
+{"/_app":"pages/_app.js","/_document":"pages/_document.js","/_error":"pages/_error.js","/About":"pages/About.html","/Area":"pages/Area.html","/Contact":"pages/Contact.html","/Footer":"pages/Footer.html","/Header":"pages/Header.html","/Hero":"pages/Hero.html","/Pericia":"pages/Pericia.html","/api/pericias":"pages/api/pericias.js","/Services":"pages/Services.html","/":"pages/index.html","/404":"pages/404.html"}
