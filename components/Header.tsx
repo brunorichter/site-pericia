@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LOGO_BASE64 } from '../constants';
 
-const Header: React.FC = () => {
+const Header = (): JSX.Element => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHomePage, setIsHomePage] = useState(false);
 

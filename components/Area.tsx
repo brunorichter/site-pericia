@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPinIcon } from './Icons';
 
-const Area: React.FC = () => {
+const Area = (): JSX.Element => {
   return (
     <section id="atuacao" className="py-20 bg-brand-dark-secondary">
       <div className="container mx-auto px-6 text-center">

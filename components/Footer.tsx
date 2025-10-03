@@ -2,7 +2,7 @@
 import React from 'react';
 import { LOGO_BASE64 } from '../constants';
 
-const Footer: React.FC = () => {
+const Footer = (): JSX.Element => {
   return (
     <footer className="bg-brand-dark-secondary border-t border-gray-800">
       <div className="container mx-auto px-6 py-8 text-center text-brand-gray">
