@@ -16,7 +16,7 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const DetalhesModal: React.FC<DetalhesModalProps> = ({ pericia, onClose, onSave }) => {
+const DetalhesModal = ({ pericia, onClose, onSave }:DetalhesModalProps): JSX.Element => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Pericia>(pericia);
 

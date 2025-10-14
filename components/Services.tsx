@@ -34,7 +34,7 @@ const services = [
   },
 ];
 
-const Services: React.FC = () => {
+const Services = (): JSX.Element => {
   return (
     <section id="servicos" className="py-20 bg-brand-dark">
       <div className="container mx-auto px-6 text-center">

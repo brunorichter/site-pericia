@@ -1,7 +1,7 @@
 import React from 'react';
 import { LOGO_BASE64 } from '../constants';
 
-const About: React.FC = () => {
+const About = (): JSX.Element => {
   return (
     <section id="sobre" className="py-20 bg-brand-dark-secondary">
       <div className="container mx-auto px-6">

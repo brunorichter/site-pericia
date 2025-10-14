@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Hero: React.FC = () => {
+const Hero = (): JSX.Element => {
   return (
     <section id="home" className="relative h-screen flex items-center justify-center text-center bg-cover bg-center" style={{backgroundImage: "linear-gradient(rgba(26, 32, 44, 0.8), rgba(26, 32, 44, 0.8)), url('https://picsum.photos/id/1018/1600/900')"}}>
       <div className="container mx-auto px-6 z-10">

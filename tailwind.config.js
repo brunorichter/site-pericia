@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+/** @type {import('tailwindcss').config} */
 
 // tailwind.config.js (compatível com Tailwind 1.x)
 module.exports = {

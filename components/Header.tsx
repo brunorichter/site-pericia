@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { LOGO_BASE64 } from '../constants';
 
-const Header: React.FC = () => {
+const Header = (): JSX.Element => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHomePage, setIsHomePage] = useState(false);
 
@@ -34,13 +35,12 @@ const Header: React.FC = () => {
           </nav>
         )}
 
-        <a 
-          href="#"
-          onClick={(e) => { e.preventDefault(); alert('A página de login será implementada em uma futura atualização.'); }}
+        <Link
+          href="/login"
           className="hidden md:inline-block bg-brand-cyan-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-brand-cyan-600 transition duration-300 shadow-md"
         >
           Login
-        </a>
+        </Link>
       </div>
     </header>
   );

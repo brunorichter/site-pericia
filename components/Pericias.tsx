@@ -9,22 +9,17 @@ interface PericiasProps {
   error: string | null;
 }
 
-export const getStatusClass = (status: string) => {
+export function getStatusClass(status: string): string {
   switch (status) {
-    case 'Em Andamento':
-      return 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/30';
-    case 'Concluído':
-      return 'bg-green-400/20 text-green-300 border border-green-400/30';
-    case 'Pendente':
-      return 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/30';
-    case 'Arquivado':
-      return 'bg-gray-400/20 text-gray-300 border border-gray-400/30';
-    default:
-      return 'bg-gray-200/20 text-gray-300 border border-gray-200/30';
+    case 'Em Andamento': return 'bg-yellow-500 text-white';
+    case 'Concluído':    return 'bg-green-500 text-white';
+    case 'Pendente':     return 'bg-red-500 text-white';
+    case 'Arquivado':    return 'bg-gray-500 text-white';
+    default:             return 'bg-gray-300 text-black';
   }
-};
+}
 
-const Pericias: React.FC<PericiasProps> = ({ pericias, isLoading, error }) => {
+const Pericias = ({ pericias, isLoading, error }: PericiasProps): JSX.Element => {
   const [periciasList, setPericiasList] = useState<Pericia[]>(pericias);
   const [selectedPericia, setSelectedPericia] = useState<Pericia | null>(null);
 

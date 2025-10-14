@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MailIcon, PhoneIcon } from '../components/Icons';
 
-const Contact: React.FC = () => {
+const Contact = (): JSX.Element => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('');
 
