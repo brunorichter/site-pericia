@@ -1,8 +1,10 @@
-
+﻿
 import React, { useState, useEffect, ReactNode } from 'react';
+import type { GetServerSideProps } from 'next';
+import { isRequestAuthenticated, redirectToLogin } from '../../lib/auth-server';
+import Header from '../../components/Header';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../context/authContext';
 import { getProcesses } from '../../services/processService';
 import { JudicialProcess, ProcessStatus, Payment, JusticeType, PericiaType } from '../../types';
 
@@ -81,7 +83,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
             groupedByMonth[month].push(payment);
         });
 
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const monthNames = ["Janeiro", "Fevereiro", "MarÃƒÂ§o", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const months: ReportMonth[] = [];
         let grandTotal = 0;
 
@@ -109,7 +111,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="Relatório de Pagamentos">
+        <Modal isOpen={isOpen} onClose={handleClose} title="RelatÃƒÂ³rio de Pagamentos">
             <div className="space-y-4">
                 <div className="flex items-end space-x-4 p-4 bg-gray-50 rounded-lg">
                     <div>
@@ -127,7 +129,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
                         onClick={handleGenerateReport}
                         className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
                     >
-                        Gerar Relatório 
+                        Gerar RelatÃƒÂ³rio 
                     </button>
                 </div>
 
@@ -148,7 +150,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
                                             ))}
                                         </ul>
                                         <div className="text-right font-bold text-gray-800 pr-2">
-                                            Subtotal Mês: {monthData.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            Subtotal MÃƒÆ’Ã‚Âªs: {monthData.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                         </div>
                                     </div>
                                 ))}
@@ -209,7 +211,7 @@ const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
                     <Badge text={process.periciaType} colorClass={periciaTypeColors[process.periciaType]} />
                 </div>
                 <p className="text-sm text-gray-200 mb-1"><span className="font-semibold">Autor:</span> {process.plaintiff}</p>
-                <p className="text-sm text-gray-200"><span className="font-semibold">Réu:</span> {process.defendant}</p>
+                <p className="text-sm text-gray-200"><span className="font-semibold">R\u00E9u:</span> {process.defendant}</p>
                  <p className="text-sm text-gray-200 mt-2"><span className="font-semibold">Cidade:</span> {process.city}</p>
             </div>
             <div className="mt-4 pt-2 pb-2 ml-auto rounded-lg relative inset-0 w-2/5 border-gray-200 text-center bg-brand-cyan-500 text-white font-bold hover:underline">
@@ -221,36 +223,29 @@ const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
 
 
 const ProcessListPage: React.FC = () => {
-    const { isAuthenticated } = useAuth();
     const router = useRouter();
     const [processes, setProcesses] = useState<JudicialProcess[]>([]);
     const [loading, setLoading] = useState(true);
     const [isReportModalOpen, setReportModalOpen] = useState(false);
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login');
-        } else {
-            const fetchProcesses = async () => {
-                setLoading(true);
-                const data = await getProcesses();
-                setProcesses(data);
-                setLoading(false);
-            };
-            fetchProcesses();
-        }
-    }, [isAuthenticated, router]);
-    
-    if (!isAuthenticated) {
-        return <div className="text-center p-10">Redirecionando para o login...</div>;
-    }
+        const fetchProcesses = async () => {
+            setLoading(true);
+            const data = await getProcesses();
+            setProcesses(data);
+            setLoading(false);
+        };
+        fetchProcesses();
+    }, [router]);
 
     if (loading) {
         return <div className="text-center p-10">Carregando processos...</div>;
     }
 
     return (
-        <div className="bg-brand-dark min-h-screen">
+        <>
+        <Header />
+        <div className="bg-brand-dark min-h-screen pt-20 md:pt-24">
             <div className="container mx-auto px-6 py-10 bg-brand-dark">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold text-white">Lista de Processos</h1>
@@ -259,7 +254,7 @@ const ProcessListPage: React.FC = () => {
                             onClick={() => setReportModalOpen(true)}
                             className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out shadow-sm"
                         >
-                            Relatório Pagamentos
+                            RelatÃƒÂ³rio Pagamentos
                         </button>
                         <Link
                             href="/processes/new"
@@ -281,7 +276,15 @@ const ProcessListPage: React.FC = () => {
                 />
             </div>
         </div>
+        </>
     );
 };
 
 export default ProcessListPage;
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+    if (!isRequestAuthenticated(ctx)) {
+        return redirectToLogin(ctx);
+    }
+    return { props: {} };
+};

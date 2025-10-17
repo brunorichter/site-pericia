@@ -1,0 +1,49 @@
+1	import React, { useState, useEffect } from 'react';
+2	import Link from 'next/link';
+3	import { LOGO_BASE64 } from '../constants';
+4	
+5	const Header = (): JSX.Element => {
+6	  const [isScrolled, setIsScrolled] = useState(false);
+7	  const [isHomePage, setIsHomePage] = useState(false);
+8	
+9	  useEffect(() => {
+10	    setIsHomePage(window.location.pathname === '/');
+11	    
+12	    const handleScroll = () => {
+13	      setIsScrolled(window.scrollY > 10);
+14	    };
+15	    handleScroll(); 
+16	    window.addEventListener('scroll', handleScroll);
+17	    return () => {
+18	      window.removeEventListener('scroll', handleScroll);
+19	    };
+20	  }, []);
+21	
+22	  return (
+23	    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-brand-dark shadow-lg' : 'bg-transparent'}`}>
+24	      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+25	        <a href="/" className="flex items-center space-x-3 cursor-pointer">
+26	          <img src={LOGO_BASE64} alt="Richter Logo" className="h-12 w-auto" />
+27	        </a>
+28	        
+29	        {isHomePage && (
+30	          <nav className="hidden md:flex space-x-8">
+31	            <a href="#sobre" className="text-brand-gray hover:text-brand-cyan-400 transition duration-300">Sobre</a>
+32	            <a href="#servicos" className="text-brand-gray hover:text-brand-cyan-400 transition duration-300">Serviços</a>
+33	            <a href="#atuacao" className="text-brand-gray hover:text-brand-cyan-400 transition duration-300">Área de Atuação</a>
+34	            <a href="#contato" className="text-brand-gray hover:text-brand-cyan-400 transition duration-300">Contato</a>
+35	          </nav>
+36	        )}
+37	
+38	        <Link
+39	          href="/login"
+40	          className="hidden md:inline-block bg-brand-cyan-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-brand-cyan-600 transition duration-300 shadow-md"
+41	        >
+42	          Login
+43	        </Link>
+44	      </div>
+45	    </header>
+46	  );
+47	};
+48	
+49	export default Header;

@@ -1,7 +1,9 @@
-
+﻿
 import React, { useState, useEffect, useCallback, ReactNode } from 'react';
+import type { GetServerSideProps } from 'next';
+import { isRequestAuthenticated, redirectToLogin } from '../../lib/auth-server';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../context/authContext';
+import Header from '../../components/Header';
 import { getProcessById, saveProcess } from '../../services/processService';
 import { JudicialProcess, ProcessStatus, FeeProposal, Payment, JusticeType, PericiaType } from '../../types';
 
@@ -218,7 +220,6 @@ const FeesReceivedModal: React.FC<{
 
 const ProcessDetailPage: React.FC = () => {
     const router = useRouter();
-    const { isAuthenticated } = useAuth();
     const { id } = router.query;
     const [process, setProcess] = useState<JudicialProcess | null>(null);
     const [loading, setLoading] = useState(true);
@@ -258,14 +259,10 @@ const ProcessDetailPage: React.FC = () => {
     }, [id, isNew, router]);
     
     useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login');
-            return;
-        }
         if (router.isReady) {
             fetchProcess();
         }
-    }, [isAuthenticated, router, router.isReady, fetchProcess]);
+    }, [router, router.isReady, fetchProcess]);
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -301,15 +298,14 @@ const ProcessDetailPage: React.FC = () => {
         return process.feesReceived.reduce((sum, payment) => sum + payment.amount, 0);
     };
     
-    if (!isAuthenticated) {
-        return <div className="text-center p-10">Redirecionando para o login...</div>;
-    }
     if (loading) return <div className="text-center p-10">Carregando dados do processo...</div>;
     if (!process) return <div className="text-center p-10">Carregando...</div>;
 
     return (
         <>
-            <div className="bg-brand-dark p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+            <Header />
+            <div className="bg-brand-dark min-h-screen pt-20 md:pt-24">
+                <div className="p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
                 <h1 className="text-3xl font-bold text-white mb-6 border-b pb-4">
                     {isNew ? 'Adicionar Novo Processo' : `Processo: ${process.processNumber}`}
                 </h1>
@@ -350,17 +346,6 @@ const ProcessDetailPage: React.FC = () => {
                                 <input type="date" name="startDate" id="startDate" value={process.startDate} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300">Tipo de Justiça</label>
-                                <div className="mt-2 flex space-x-4">
-                                    {Object.values(JusticeType).map(type => (
-                                        <div key={type} className="flex items-center">
-                                            <input id={`justice-${type}`} name="justiceType" type="radio" value={type} checked={process.justiceType === type} onChange={handleChange} className="flex-grow px-3 py-2 border block h-7 w-4 text-cyan-600 border-gray-300 focus:ring-cyan-200" />
-                                            <label htmlFor={`justice-${type}`} className="ml-3 block text-sm font-medium text-gray-300  ">{type}</label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
                                 <label className="block text-sm font-medium text-gray-300">Tipo de Perícia</label>
                                 <div className="mt-2 flex space-x-4">
                                     {Object.values(PericiaType).map(type => (
@@ -376,15 +361,6 @@ const ProcessDetailPage: React.FC = () => {
                                 <input type="number" step="0.01" name="caseValue" id="caseValue" value={process.caseValue} onChange={handleChange} className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300">Honorários Cobrados (R$)</label>
-                                <div className="mt-1 flex rounded-md shadow-sm">
-                                    <span className="flex-grow px-3 py-2 border border-r-0 border-gray-300 bg-brand-dark-secondary text-white rounded-l-md sm:text-sm">
-                                        {getLatestFeeCharged().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                    </span>
-                                    <button type="button" onClick={() => setFeesChargedModalOpen(true)} className="bg-gray-200 hover:bg-gray-300 px-4 rounded-r-md font-semibold text-sm">Gerenciar</button>
-                                </div>
-                            </div>
-                             <div>
                                 <label className="block text-sm font-medium text-gray-300">Honorários Recebidos (R$)</label>
                                 <div className="mt-1 flex rounded-md shadow-sm">
                                     <span className="flex-grow px-3 py-2 border border-r-0 border-gray-300 bg-brand-dark-secondary text-white rounded-l-md sm:text-sm">
@@ -407,6 +383,7 @@ const ProcessDetailPage: React.FC = () => {
                     </div>
                 </form>
             </div>
+            </div>
 
             {/* Modals */}
             <FeesChargedModal 
@@ -426,3 +403,10 @@ const ProcessDetailPage: React.FC = () => {
 };
 
 export default ProcessDetailPage;
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+    if (!isRequestAuthenticated(ctx)) {
+        return redirectToLogin(ctx);
+    }
+    return { props: {} };
+};

@@ -15,7 +15,6 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 .next/*
-.next/
 node_modules
 !.vscode/extensions.json
 .idea
