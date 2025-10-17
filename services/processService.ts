@@ -119,23 +119,60 @@ const simulateDelay = <T,>(data: T): Promise<T> =>
 
 
 export const getProcesses = async (): Promise<JudicialProcess[]> => {
-    return simulateDelay(mockProcesses);
+    try {
+        const res = await fetch('/api/processes');
+        if (!res.ok) return mockProcesses;
+        const json = await res.json();
+        if (json?.ok && Array.isArray(json.data)) {
+            return json.data as JudicialProcess[];
+        }
+        return mockProcesses;
+    } catch {
+        return mockProcesses;
+    }
 };
 
 export const getProcessById = async (id: string): Promise<JudicialProcess | undefined> => {
+    try {
+        const res = await fetch(`/api/processes/${id}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json?.ok && json.data) return json.data as JudicialProcess;
+        }
+    } catch {}
     const process = mockProcesses.find(p => p.id === id);
     return simulateDelay(process);
 };
 
 export const saveProcess = async (process: JudicialProcess): Promise<JudicialProcess> => {
     if (process.id && process.id !== 'new') {
-        // Update
+        try {
+            const res = await fetch(`/api/processes/${process.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(process),
+            });
+            if (res.ok) return process;
+        } catch {}
+        // Fallback to mock update if API not available
         mockProcesses = mockProcesses.map(p => p.id === process.id ? process : p);
+        return simulateDelay(process);
     } else {
-        // Create
+        // Create via API when available
+        try {
+            const res = await fetch('/api/processes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(process),
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json?.ok && json.data) return json.data as JudicialProcess;
+            }
+        } catch {}
+        // Fallback mock creation
         const newProcess = { ...process, id: new Date().getTime().toString() };
         mockProcesses.push(newProcess);
         return simulateDelay(newProcess);
     }
-    return simulateDelay(process);
 };

@@ -338,6 +338,10 @@ const ProcessDetailPage: React.FC = () => {
                                     ))}
                                 </select>
                             </div>
+                            <div>
+                                <label htmlFor="caseValue" className="block text-sm font-medium text-gray-300">Valor da Causa (R$)</label>
+                                <input type="number" step="0.01" name="caseValue" id="caseValue" value={process.caseValue} onChange={handleChange} className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
+                                </div>
                         </div>
                         {/* Column 2 */}
                         <div className="space-y-6">
@@ -356,9 +360,26 @@ const ProcessDetailPage: React.FC = () => {
                                     ))}
                                 </div>
                             </div>
+                                                        <div>
+                                <label className="block text-sm font-medium text-gray-300">Tipo de Processo</label>
+                                <div className="mt-2 flex space-x-4">
+                                    {Object.values(JusticeType).map(type => (
+                                        <div key={type} className="flex items-center">
+                                            <input id={`justica-${type}`} name="justicaType" type="radio" value={type} checked={process.justiceType === type} onChange={handleChange} className="flex-grow px-3 py-2 border block h-7 w-4 focus:ring-blue-500 text-blue-600 border-gray-300" />
+                                            <label htmlFor={`justica-${type}`} className="ml-3 block text-sm font-medium text-gray-300">{type}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div>
-                                <label htmlFor="caseValue" className="block text-sm font-medium text-gray-300">Valor da Causa (R$)</label>
-                                <input type="number" step="0.01" name="caseValue" id="caseValue" value={process.caseValue} onChange={handleChange} className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
+                                <label className="block text-sm font-medium text-gray-300">Honorários Recebidos (R$)</label>
+                                <div className="mt-1 flex rounded-md shadow-sm">
+                                    <span className="flex-grow px-3 py-2 border border-r-0 border-gray-300 bg-brand-dark-secondary text-white rounded-l-md sm:text-sm">
+                                        {getTotalFeesReceived().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                    </span>
+                                    <button type="button" onClick={() => setFeesReceivedModalOpen(true)} className="bg-gray-200 hover:bg-gray-300 px-4 rounded-r-md font-semibold text-sm">Gerenciar</button>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-300">Honorários Recebidos (R$)</label>
@@ -374,7 +395,7 @@ const ProcessDetailPage: React.FC = () => {
 
                     <div className="col-span-1 md:col-span-2">
                         <label htmlFor="description" className="block text-sm font-medium text-gray-300">Descrição</label>
-                        <textarea name="description" id="description" rows={4} value={process.description} onChange={handleChange} className="mt-1 block w-full rounded-md bg-brand-dark-secondary text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>
+                        <textarea name="description" id="description" rows={4} value={process.description} onChange={handleChange} className="mt-1 block w-full border rounded-md px-4 py-2 bg-brand-dark-secondary text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>
                     </div>
                     
                     <div className="flex justify-end space-x-4 pt-4 border-t mt-6">
