@@ -111,7 +111,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="RelatÃƒÂ³rio de Pagamentos">
+        <Modal isOpen={isOpen} onClose={handleClose} title="Relatório de Pagamentos">
             <div className="space-y-4">
                 <div className="flex items-end space-x-4 p-4 bg-gray-50 rounded-lg">
                     <div>
@@ -129,7 +129,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
                         onClick={handleGenerateReport}
                         className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
                     >
-                        Gerar RelatÃƒÂ³rio 
+                        Gerar Relatório 
                     </button>
                 </div>
 
@@ -150,7 +150,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
                                             ))}
                                         </ul>
                                         <div className="text-right font-bold text-gray-800 pr-2">
-                                            Subtotal MÃƒÆ’Ã‚Âªs: {monthData.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            Subtotal Mês: {monthData.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                         </div>
                                     </div>
                                 ))}
@@ -197,13 +197,21 @@ const Badge: React.FC<{ text: string; colorClass: string }> = ({ text, colorClas
     </span>
 );
 
+const ProcessNumberBadge: React.FC<{ number: string; className?: string }> = ({ number, className = "" }) => {
+  return (
+    <h3 className={`text-lg font-bold border-1 shadow-[2px_2px_2px_0_rgba(255,255,255,0.4)] border-brand-cyan-400 rounded-sm pl-4 -mt-20 -ml-10 text-white bg-brand-cyan-600  w-1/4 ${className}`}>
+      {number}
+    </h3>
+  );
+};
+
 
 const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
     <Link href={`/processes/${process.id}`} className="block">
-        <div className="bg-brand-dark-secondary rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6 flex flex-col justify-between h-full">
+        <div className="border-l-2 hover:border-l-4 border-brand-cyan-600 p-8 scale mt-1 mx-10 rounded-r-xl hover:scale-[1.03] bg-brand-dark shadow-[4px_0_8px_0_rgba(209,213,219,1)] hover:shadow-[4px_0_8px_0_rgba(255,255,255,1)] hover:bg-brand-dark-secondary transition-all duration-500">
             <div>
-                <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-bold text-white mb-2">{process.processNumber}</h3>
+                <div className="flex justify-between items-center ">
+                    <ProcessNumberBadge number={process.processNumber} className={"text-lg font-bold text-white   bg-brand-cyan-500 w-1/12"} />
                      <Badge text={process.status} colorClass={statusColors[process.status]} />
                 </div>
                  <div className="flex items-center space-x-2 mb-4">
@@ -254,7 +262,7 @@ const ProcessListPage: React.FC = () => {
                             onClick={() => setReportModalOpen(true)}
                             className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out shadow-sm"
                         >
-                            RelatÃƒÂ³rio Pagamentos
+                            Relatório Pagamentos
                         </button>
                         <Link
                             href="/processes/new"
@@ -264,7 +272,7 @@ const ProcessListPage: React.FC = () => {
                         </Link>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid mt-4 grid-cols-1 rounded-xl gap-6 4px_0_8px_0_rgba(209,213,219,1)] shadow-[4px_0_8px_0_rgba(255,255,255,1)] bg-brand-dark-secondary">
                     {processes.map(process => (
                         <ProcessCard key={process.id} process={process} />
                     ))}

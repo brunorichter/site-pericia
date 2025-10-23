@@ -305,7 +305,7 @@ const ProcessDetailPage: React.FC = () => {
         <>
             <Header />
             <div className="bg-brand-dark min-h-screen pt-20 md:pt-24">
-                <div className="p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+                <div className="p-8 rounded-xl shadow-[4px_0_8px_0_rgba(209,213,219,1)] hover:shadow-[4px_0_8px_0_rgba(255,255,255,1)] transition-shadow duration-300 max-w-4xl mx-auto">
                 <h1 className="text-3xl font-bold text-white mb-6 border-b pb-4">
                     {isNew ? 'Adicionar Novo Processo' : `Processo: ${process.processNumber}`}
                 </h1>
