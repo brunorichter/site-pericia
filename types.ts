@@ -30,6 +30,8 @@ export interface Payment {
   id: string;
   date: string;
   amount: number;
+  taxes: number;
+  total: number;
   source: string;
 }
 
@@ -66,6 +68,16 @@ export interface PericiaRow {
   dtins: string | Date;
   dataPericia: string | Date;
   dataInicio: string | Date;
+}
+
+export interface PaymentRow {
+  id: number;
+  proc_id: number;
+  desc: string;
+  valor_depositado: string | number;
+  imposto_retido: string | number;
+  valor_total: string | number;
+  data: string | Date;
 }
 
 function bitToBool(v: any): boolean {
@@ -116,5 +128,16 @@ export function mapPericiaRowToJudicialProcess(r: PericiaRow): JudicialProcess {
     feesCharged,
     feesReceived: [],
     description: r.descricao || '',
+  };
+}
+
+export function mapPaymentRowToPayment(row: PaymentRow): Payment {
+  return {
+    id: String(row.id),
+    source: row.desc || '',
+    amount: Number(row.valor_depositado || 0) || 0,
+    taxes: Number(row.imposto_retido || 0) || 0,
+    total: Number(row.valor_total || 0) || 0,
+    date: toISODate(row.data) || '',
   };
 }

@@ -83,7 +83,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
             groupedByMonth[month].push(payment);
         });
 
-        const monthNames = ["Janeiro", "Fevereiro", "MarÃƒÂ§o", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const months: ReportMonth[] = [];
         let grandTotal = 0;
 
@@ -197,6 +197,7 @@ const Badge: React.FC<{ text: string; colorClass: string }> = ({ text, colorClas
     </span>
 );
 
+// -- Label process number ---
 const ProcessNumberBadge: React.FC<{ number: string; className?: string }> = ({ number, className = "" }) => {
   return (
     <h3 className={`text-lg font-bold border-1 shadow-[2px_2px_2px_0_rgba(255,255,255,0.4)] border-brand-cyan-400 rounded-sm pl-4 -mt-20 -ml-10 text-white bg-brand-cyan-600  w-1/4 ${className}`}>
@@ -205,7 +206,7 @@ const ProcessNumberBadge: React.FC<{ number: string; className?: string }> = ({ 
   );
 };
 
-
+// --- Process Card Component ---
 const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
     <Link href={`/processes/${process.id}`} className="block">
         <div className="border-l-2 hover:border-l-4 border-brand-cyan-600 p-8 scale mt-1 mx-10 rounded-r-xl hover:scale-[1.03] bg-brand-dark shadow-[4px_0_8px_0_rgba(209,213,219,1)] hover:shadow-[4px_0_8px_0_rgba(255,255,255,1)] hover:bg-brand-dark-secondary transition-all duration-500">
@@ -219,7 +220,7 @@ const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
                     <Badge text={process.periciaType} colorClass={periciaTypeColors[process.periciaType]} />
                 </div>
                 <p className="text-sm text-gray-200 mb-1"><span className="font-semibold">Autor:</span> {process.plaintiff}</p>
-                <p className="text-sm text-gray-200"><span className="font-semibold">R\u00E9u:</span> {process.defendant}</p>
+                <p className="text-sm text-gray-200"><span className="font-semibold">Réu:</span> {process.defendant}</p>
                  <p className="text-sm text-gray-200 mt-2"><span className="font-semibold">Cidade:</span> {process.city}</p>
             </div>
             <div className="mt-4 pt-2 pb-2 ml-auto rounded-lg relative inset-0 w-2/5 border-gray-200 text-center bg-brand-cyan-500 text-white font-bold hover:underline">

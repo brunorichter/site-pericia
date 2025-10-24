@@ -13,7 +13,7 @@ let mockProcesses: JudicialProcess[] = [
     startDate: '2023-01-15',
     caseValue: 50000.00,
     feesCharged: [{ id: 'fc1', date: '2023-01-10', amount: 5000.00 }],
-    feesReceived: [{ id: 'fr1', date: '2023-02-01', amount: 2500.00, source: 'Adiantamento' }],
+    feesReceived: [{ id: 'fr1', date: '2023-02-01', amount: 2500.00, taxes: 0, total: 2500.00, source: 'Adiantamento' }],
     description: 'Perícia técnica para avaliação de falhas na prestação de serviço de internet.'
   },
   {
@@ -29,8 +29,8 @@ let mockProcesses: JudicialProcess[] = [
     caseValue: 120000.00,
     feesCharged: [{ id: 'fc2', date: '2022-11-15', amount: 8000.00 }],
     feesReceived: [
-        { id: 'fr2', date: '2022-12-01', amount: 4000.00, source: 'Primeira parcela' },
-        { id: 'fr3', date: '2023-01-05', amount: 4000.00, source: 'Segunda parcela' }
+        { id: 'fr2', date: '2022-12-01', amount: 4000.00, taxes: 0, total: 4000.00, source: 'Primeira parcela' },
+        { id: 'fr3', date: '2023-01-05', amount: 4000.00, taxes: 0, total: 4000.00, source: 'Segunda parcela' }
     ],
     description: 'Laudo pericial sobre vícios construtivos em imóvel residencial.'
   },
@@ -64,7 +64,7 @@ let mockProcesses: JudicialProcess[] = [
     startDate: '2021-06-30',
     caseValue: 30000.00,
     feesCharged: [{ id: 'fc5', date: '2021-06-20', amount: 3000.00 }],
-    feesReceived: [{ id: 'fr4', date: '2021-07-15', amount: 3000.00, source: 'Pagamento integral' }],
+    feesReceived: [{ id: 'fr4', date: '2021-07-15', amount: 3000.00, taxes: 0, total: 3000.00, source: 'Pagamento integral' }],
     description: 'Avaliação de danos em veículo sinistrado.'
   },
   {
@@ -109,7 +109,7 @@ let mockProcesses: JudicialProcess[] = [
     startDate: '2024-03-15',
     caseValue: 8000.00,
     feesCharged: [{ id: 'fc8', date: '2024-03-20', amount: 1500.00 }],
-    feesReceived: [{ id: 'fr5', date: '2024-03-25', amount: 750.00, source: 'Adiantamento' }],
+    feesReceived: [{ id: 'fr5', date: '2024-03-25', amount: 750.00, taxes: 0, total: 750.00, source: 'Adiantamento' }],
     description: 'Verificação de reparos realizados em motor de veículo.'
   }
 ];
