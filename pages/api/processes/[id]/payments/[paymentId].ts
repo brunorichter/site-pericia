@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { mapPaymentRowToPayment, PaymentRow } from '../../../../../types';
+import { applyCors } from '../../../../../lib/cors';
 
 function toDateTime(value: string): string | null {
   if (!value) return null;
@@ -10,6 +11,8 @@ function toDateTime(value: string): string | null {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (applyCors(req, res)) return;
+
   const { id, paymentId } = req.query;
 
   if (!id || Array.isArray(id) || !paymentId || Array.isArray(paymentId)) {

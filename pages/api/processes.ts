@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { mapPericiaRowToJudicialProcess, PericiaRow, JudicialProcess, JusticeType, PericiaType } from '../../types';
+import { applyCors } from '../../lib/cors';
 
 function toDateTime(value: string): string | null {
   if (!value) return null;
@@ -18,6 +19,8 @@ function latestFeeChargedAmount(jp: JudicialProcess): number | null {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (applyCors(req, res)) return;
+
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', ['GET', 'POST']);
     return res.status(405).end('Method Not Allowed');

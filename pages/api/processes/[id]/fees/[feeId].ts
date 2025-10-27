@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { mapHonorarioRowToFeeProposal, HonorarioRow } from '../../../../../types';
+import { applyCors } from '../../../../../lib/cors';
 
 function toDateTime(value: string): string | null {
   if (!value) return null;
@@ -9,6 +10,8 @@ function toDateTime(value: string): string | null {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (applyCors(req, res)) return;
+
   const { id, feeId } = req.query;
 
   if (!id || Array.isArray(id) || !feeId || Array.isArray(feeId)) {

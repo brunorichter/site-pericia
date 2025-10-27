@@ -10,6 +10,7 @@ import {
   mapHonorarioRowToFeeProposal,
   HonorarioRow,
 } from '../../../types';
+import { applyCors } from '../../../lib/cors';
 
 function toDateTime(value: string): string | null {
   if (!value) return null;
@@ -28,6 +29,8 @@ function ultimoPagamento(jp: JudicialProcess): number | null {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (applyCors(req, res)) return;
+
   const { id } = req.query;
   if (!id || Array.isArray(id)) return res.status(400).json({ ok: false, error: 'Invalid id' });
 

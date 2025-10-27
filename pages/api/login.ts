@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { signJwt } from '../../lib/jwt';
+import { applyCors } from '../../lib/cors';
 
 function badRequest(res: NextApiResponse, message = 'Requisição inválida') {
   return res.status(400).json({ ok: false, error: message });
@@ -34,6 +35,8 @@ function serializeCookie(
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (applyCors(req, res)) return;
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end('Method Not Allowed');
