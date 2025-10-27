@@ -59,10 +59,26 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   // Issue JWT and set HttpOnly cookie
   const token = signJwt({ sub: username }, JWT_SECRET, 60 * 60 * 8); // 8h
-  const isProd = process.env.NODE_ENV === 'production';
+  const forwardedProto = Array.isArray(req.headers['x-forwarded-proto'])
+    ? req.headers['x-forwarded-proto'][0]
+    : req.headers['x-forwarded-proto'];
+  const cookieSecureEnv = process.env.COOKIE_SECURE?.toLowerCase();
+  let useSecure: boolean;
+  if (cookieSecureEnv === 'true') {
+    useSecure = true;
+  } else if (cookieSecureEnv === 'false') {
+    useSecure = false;
+  } else if (forwardedProto) {
+    useSecure = forwardedProto === 'https';
+  } else {
+    useSecure = process.env.NODE_ENV === 'production';
+  }
+  if (useSecure && !(forwardedProto === 'https')) {
+    console.warn('[api/login] Secure cookie enabled. Ensure the app is served over HTTPS so the session cookie is kept.');
+  }
   const cookie = serializeCookie('session', token, {
     httpOnly: true,
-    secure: isProd,
+    secure: useSecure,
     sameSite: 'Lax',
     path: '/',
     maxAge: 60 * 60 * 8,
