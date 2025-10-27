@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const statusText = String(body.status || '').trim();
 
     const sql = `INSERT INTO pericia (processo, autor, reu, cidade, vara, status, descricao, valorCausa, fl_ajg, fl_tipo, valorCobrado, dataInicio)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const params = [processNumber, plaintiff, defendant, city, 0, statusText, description, caseValue, justiceBit, periciaBit, valorCobrado, startDate];
     const [result] = await conn.execute(sql, params);
     // @ts-ignore insertId available in mysql2 result

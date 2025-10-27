@@ -1,5 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { mapPericiaRowToJudicialProcess, PericiaRow, JudicialProcess, JusticeType, PericiaType } from '../../../types';
+import {
+  mapPericiaRowToJudicialProcess,
+  PericiaRow,
+  JudicialProcess,
+  JusticeType,
+  PericiaType,
+  mapPaymentRowToPayment,
+  PaymentRow,
+  mapHonorarioRowToFeeProposal,
+  HonorarioRow,
+} from '../../../types';
 
 function toDateTime(value: string): string | null {
   if (!value) return null;
@@ -40,10 +50,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'GET') {
       const [rows] = await conn.execute('SELECT * FROM pericia WHERE id = ? LIMIT 1', [id]);
-      await conn.end();
       const row = (rows as PericiaRow[])[0];
-      if (!row) return res.status(404).json({ ok: false, error: 'Not found' });
-      return res.status(200).json({ ok: true, data: mapPericiaRowToJudicialProcess(row) });
+      if (!row) {
+        await conn.end();
+        return res.status(404).json({ ok: false, error: 'Not found' });
+      }
+
+      const [honorariosRows] = await conn.execute(
+        'SELECT id, proc_id, `desc`, valor, data, dtins FROM honorarios WHERE proc_id = ? ORDER BY data DESC, id DESC',
+        [id],
+      );
+
+      const [paymentsRows] = await conn.execute(
+        'SELECT id, proc_id, `desc`, valor_depositado, imposto_retido, valor_total, data FROM pagamentos WHERE proc_id = ? ORDER BY data DESC, id DESC',
+        [id],
+      );
+
+      await conn.end();
+
+      const process = mapPericiaRowToJudicialProcess(row);
+      if (Array.isArray(honorariosRows)) {
+        process.feesCharged = (honorariosRows as HonorarioRow[]).map(mapHonorarioRowToFeeProposal);
+      }
+      if (Array.isArray(paymentsRows)) {
+        process.feesReceived = (paymentsRows as PaymentRow[]).map(mapPaymentRowToPayment);
+      }
+
+      return res.status(200).json({ ok: true, data: process });
     }
 
     if (req.method === 'PUT') {

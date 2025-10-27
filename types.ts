@@ -80,6 +80,15 @@ export interface PaymentRow {
   data: string | Date;
 }
 
+export interface HonorarioRow {
+  id: number;
+  proc_id: number;
+  desc: string;
+  valor: string | number;
+  data: string | Date;
+  dtins: string | Date;
+}
+
 function bitToBool(v: any): boolean {
   if (v == null) return false;
   if (typeof v === 'number') return v !== 0;
@@ -139,5 +148,13 @@ export function mapPaymentRowToPayment(row: PaymentRow): Payment {
     taxes: Number(row.imposto_retido || 0) || 0,
     total: Number(row.valor_total || 0) || 0,
     date: toISODate(row.data) || '',
+  };
+}
+
+export function mapHonorarioRowToFeeProposal(row: HonorarioRow): FeeProposal {
+  return {
+    id: String(row.id),
+    date: toISODate(row.data) || toISODate(row.dtins) || '',
+    amount: Number(row.valor || 0) || 0,
   };
 }

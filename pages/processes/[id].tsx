@@ -46,13 +46,55 @@ const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; chi
 const FeesChargedModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
+    processId?: string;
     proposals: FeeProposal[];
     onUpdate: (proposals: FeeProposal[]) => void;
-}> = ({ isOpen, onClose, proposals, onUpdate }) => {
+}> = ({ isOpen, onClose, processId, proposals, onUpdate }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [amount, setAmount] = useState('');
-
     const [editingProposal, setEditingProposal] = useState<FeeProposal | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
+
+    const canPersist = Boolean(processId && processId !== 'new');
+    const latestOnUpdate = useRef(onUpdate);
+
+    useEffect(() => {
+        latestOnUpdate.current = onUpdate;
+    }, [onUpdate]);
+
+    useEffect(() => {
+        if (!isOpen || !canPersist) return;
+        let cancelled = false;
+        const fetchProposals = async () => {
+            setIsLoading(true);
+            setApiError(null);
+            try {
+                const res = await fetch(`/api/processes/${processId}/fees`);
+                if (cancelled) return;
+                if (res.status === 204) return;
+                if (!res.ok) throw new Error('Erro ao carregar honorarios');
+                const json = await res.json();
+                if (!cancelled && json?.ok && Array.isArray(json.data)) {
+                    latestOnUpdate.current(json.data as FeeProposal[]);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setApiError('Nao foi possivel carregar as propostas do banco.');
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsLoading(false);
+                }
+            }
+        };
+        fetchProposals();
+        return () => {
+            cancelled = true;
+            setIsLoading(false);
+        };
+    }, [isOpen, canPersist, processId]);
 
     const resetForm = () => {
         setDate(new Date().toISOString().split('T')[0]);
@@ -67,28 +109,98 @@ const FeesChargedModal: React.FC<{
 
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (date && amount) {
-            if(editingProposal) {
-                // Update
-                const updatedProposals = proposals.map(p => 
-                    p.id === editingProposal.id ? { ...p, date, amount: parseFloat(amount) } : p
-                );
-                onUpdate(updatedProposals);
-            } else {
-                // Add new
-                const newProposal: FeeProposal = { id: new Date().getTime().toString(), date, amount: parseFloat(amount) };
-                onUpdate([...proposals, newProposal]);
+        if (!date || !amount) return;
+
+        setIsSubmitting(true);
+        setApiError(null);
+
+        const amountValue = parseFloat(amount) || 0;
+        const trimmedAmount = Number.isFinite(amountValue) ? amountValue : 0;
+        const fallbackId = editingProposal ? editingProposal.id : new Date().getTime().toString();
+        const baseProposal: FeeProposal = { id: fallbackId, date, amount: trimmedAmount };
+
+        let persistedProposal: FeeProposal | null = null;
+        let shouldFallback = !canPersist;
+
+        if (!shouldFallback) {
+            try {
+                const endpoint = editingProposal
+                    ? `/api/processes/${processId}/fees/${editingProposal.id}`
+                    : `/api/processes/${processId}/fees`;
+                const method = editingProposal ? 'PUT' : 'POST';
+                const res = await fetch(endpoint, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source: 'Proposta de Honorario',
+                        amount: trimmedAmount,
+                        date,
+                    }),
+                });
+
+                if (res.status === 204) {
+                    shouldFallback = true;
+                } else if (!res.ok) {
+                    throw new Error('Erro ao salvar honorario');
+                } else {
+                    const json = await res.json();
+                    if (json?.ok) {
+                        persistedProposal = json.data ?? null;
+                    } else {
+                        shouldFallback = true;
+                    }
+                }
+            } catch (error) {
+                setApiError('Nao foi possivel salvar a proposta no banco.');
+                setIsSubmitting(false);
+                return;
             }
-            resetForm();
+        }
+
+        const proposalToApply = persistedProposal ?? baseProposal;
+        if (editingProposal) {
+            const updatedProposals = proposals.map(p =>
+                p.id === editingProposal.id ? { ...proposalToApply, id: editingProposal.id } : p
+            );
+            onUpdate(updatedProposals);
+        } else {
+            onUpdate([...proposals, proposalToApply]);
+        }
+
+        resetForm();
+        setIsSubmitting(false);
+
+        if (shouldFallback) {
+            setApiError('Os dados foram atualizados localmente, mas o banco nao retornou confirmacao.');
         }
     };
     
-    const handleRemove = (id: string) => {
-        onUpdate(proposals.filter(p => p.id !== id));
-        if (editingProposal?.id === id) {
-            resetForm();
+    const handleRemove = async (id: string) => {
+        setApiError(null);
+        let removalSucceeded = !canPersist;
+        if (canPersist) {
+            try {
+                const res = await fetch(`/api/processes/${processId}/fees/${id}`, { method: 'DELETE' });
+                if (res.status === 204) {
+                    removalSucceeded = true;
+                } else if (res.ok || res.status === 404) {
+                    removalSucceeded = true;
+                } else {
+                    throw new Error('Erro ao remover honorario');
+                }
+            } catch (error) {
+                setApiError('Nao foi possivel remover a proposta do banco.');
+                return;
+            }
+        }
+
+        if (removalSucceeded) {
+            onUpdate(proposals.filter(p => p.id !== id));
+            if (editingProposal?.id === id) {
+                resetForm();
+            }
         }
     };
 
@@ -106,25 +218,34 @@ const FeesChargedModal: React.FC<{
                     <input type="number" step="0.01" id="proposalAmount" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="Ex: 5000.00" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"/>
                 </div>
                 <div className="self-end flex space-x-2">
-                    <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">{editingProposal ? 'Atualizar' : 'Adicionar'}</button>
+                    <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-blue-300">
+                        {editingProposal ? (isSubmitting ? 'Atualizando...' : 'Atualizar') : (isSubmitting ? 'Adicionando...' : 'Adicionar')}
+                    </button>
                     {editingProposal && <button type="button" onClick={resetForm} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md transition duration-300">Cancelar</button>}
                 </div>
             </form>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Propostas Adicionadas</h4>
-            <ul className="space-y-3">
-                {sortedProposals.length > 0 ? sortedProposals.map(p => (
-                    <li key={p.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-md">
-                        <div>
-                            <span className="font-semibold">{new Date(p.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>: 
-                            <span className="text-green-700 ml-2">{p.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                        </div>
-                        <div>
-                            <button onClick={() => handleEditClick(p)} className="text-blue-500 hover:text-blue-700 font-semibold mr-4">Editar</button>
-                            <button onClick={() => handleRemove(p.id)} className="text-red-500 hover:text-red-700 font-semibold">Remover</button>
-                        </div>
-                    </li>
-                )) : <p className="text-gray-500">Nenhuma proposta adicionada.</p>}
-            </ul>
+            {apiError && <p className="text-sm text-red-600 mb-4">{apiError}</p>}
+            {isLoading ? (
+                <p className="text-gray-500">Carregando propostas...</p>
+            ) : (
+                <>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4">Propostas Adicionadas</h4>
+                    <ul className="space-y-3">
+                        {sortedProposals.length > 0 ? sortedProposals.map(p => (
+                            <li key={p.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-md">
+                                <div>
+                                    <span className="font-semibold">{new Date(p.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>: 
+                                    <span className="text-green-700 ml-2">{p.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                </div>
+                                <div>
+                                    <button onClick={() => handleEditClick(p)} className="text-blue-500 hover:text-blue-700 font-semibold mr-4">Editar</button>
+                                    <button onClick={() => handleRemove(p.id)} className="text-red-500 hover:text-red-700 font-semibold">Remover</button>
+                                </div>
+                            </li>
+                        )) : <p className="text-gray-500">Nenhuma proposta adicionada.</p>}
+                    </ul>
+                </>
+            )}
         </Modal>
     );
 };
@@ -389,6 +510,7 @@ const ProcessDetailPage: React.FC = () => {
     const [process, setProcess] = useState<JudicialProcess | null>(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
     const [isFeesChargedModalOpen, setFeesChargedModalOpen] = useState(false);
     const [isFeesReceivedModalOpen, setFeesReceivedModalOpen] = useState(false);
     
@@ -432,23 +554,34 @@ const ProcessDetailPage: React.FC = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         if (process) {
-             const updatedValue =
+            setSaveError(null);
+            const updatedValue =
                 name === 'processNumber'
                     ? applyProcessNumberMask(value)
                     : name === 'caseValue'
                     ? parseFloat(value) || 0
                     : value;
-             setProcess({ ...process, [name]: updatedValue });
+            setProcess({ ...process, [name]: updatedValue });
         }
     };
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (process) {
-            setIsSaving(true);
-            await saveProcess(process);
+        if (!process) return;
+
+        setIsSaving(true);
+        setSaveError(null);
+
+        try {
+            const saved = await saveProcess(process);
+            setProcess(saved);
+            await router.push('/processes');
+        } catch (error) {
+            console.error('[ProcessDetailPage] Falha ao salvar processo:', error);
+            const message = error instanceof Error ? error.message : 'Nao foi possivel salvar o processo. Tente novamente.';
+            setSaveError(message);
+        } finally {
             setIsSaving(false);
-            router.push('/processes');
         }
     };
 
@@ -491,11 +624,11 @@ const ProcessDetailPage: React.FC = () => {
                                 <label htmlFor="defendant" className="block text-sm font-medium text-gray-300">Réu</label>
                                 <input type="text" name="defendant" id="defendant" value={process.defendant} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
                             </div>
-                             <div>
+                            <div>
                                 <label htmlFor="city" className="block text-sm font-medium text-gray-300">Cidade</label>
                                 <input type="text" name="city" id="city" value={process.city} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
                             </div>
-                             <div>
+                            <div>
                                 <label htmlFor="status" className="block text-sm font-medium text-gray-300">Status</label>
                                 <select name="status" id="status" value={process.status} onChange={handleChange} className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm">
                                     {Object.values(ProcessStatus).map(status => (
@@ -563,6 +696,9 @@ const ProcessDetailPage: React.FC = () => {
                         <textarea name="description" id="description" rows={4} value={process.description} onChange={handleChange} className="mt-1 block w-full border rounded-md px-4 py-2 bg-brand-dark-secondary text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>
                     </div>
                     
+                    {saveError && (
+                        <p className="text-sm text-red-400 text-right">{saveError}</p>
+                    )}
                     <div className="flex justify-end space-x-4 pt-4 border-t mt-6">
                         <button type="button" onClick={() => router.push('/processes')} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-md transition duration-300">Cancelar</button>
                         <button type="submit" disabled={isSaving} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-md transition duration-300 disabled:bg-cyan-300">{isSaving ? 'Salvando...' : 'Salvar Processo'}</button>
@@ -575,6 +711,7 @@ const ProcessDetailPage: React.FC = () => {
             <FeesChargedModal 
                 isOpen={isFeesChargedModalOpen}
                 onClose={() => setFeesChargedModalOpen(false)}
+                processId={typeof id === 'string' ? id : process?.id}
                 proposals={process.feesCharged}
                 onUpdate={(updatedProposals) => setProcess({ ...process, feesCharged: updatedProposals })}
             />

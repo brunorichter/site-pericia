@@ -1,5 +1,49 @@
 import { JudicialProcess, ProcessStatus, FeeProposal, Payment, JusticeType, PericiaType } from '../types';
 
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+
+const logApiPath = (path: string, resolved: string) => {
+  const locationHint = typeof window === 'undefined' ? 'server' : 'client';
+  console.log('[processService] Caminho resolvido', {
+    contexto: locationHint,
+    base: API_BASE_URL || '(local)',
+    requisicao: path,
+    url: resolved,
+  });
+};
+
+const buildApiUrl = (path: string): string => {
+  if (!API_BASE_URL) {
+    logApiPath(path, path);
+    return path;
+  }
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const resolved = `${API_BASE_URL}${normalizedPath}`;
+  logApiPath(path, resolved);
+  return resolved;
+};
+
+const readApiError = async (res: Response): Promise<string> => {
+  try {
+    const data = await res.json();
+    if (data?.error) return String(data.error);
+    if (data?.message) return String(data.message);
+  } catch {
+    /* ignore body read errors */
+  }
+  return res.statusText || `HTTP ${res.status}`;
+};
+
+const readJsonSafe = async <T>(res: Response): Promise<T | undefined> => {
+  try {
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.toLowerCase().includes('application/json')) return undefined;
+    return (await res.json()) as T;
+  } catch {
+    return undefined;
+  }
+};
+
 let mockProcesses: JudicialProcess[] = [
   {
     id: '1',
@@ -120,8 +164,12 @@ const simulateDelay = <T,>(data: T): Promise<T> =>
 
 export const getProcesses = async (): Promise<JudicialProcess[]> => {
     try {
-        const res = await fetch('/api/processes');
-        if (!res.ok) return mockProcesses;
+        const res = await fetch(buildApiUrl('/api/processes'));
+        if (!res.ok) {
+            if (res.status === 204) return mockProcesses;
+            console.error('[processService] Falha ao buscar processos:', await readApiError(res));
+            return mockProcesses;
+        }
         const json = await res.json();
         if (json?.ok && Array.isArray(json.data)) {
             return json.data as JudicialProcess[];
@@ -134,45 +182,89 @@ export const getProcesses = async (): Promise<JudicialProcess[]> => {
 
 export const getProcessById = async (id: string): Promise<JudicialProcess | undefined> => {
     try {
-        const res = await fetch(`/api/processes/${id}`);
+        const res = await fetch(buildApiUrl(`/api/processes/${id}`));
         if (res.ok) {
             const json = await res.json();
             if (json?.ok && json.data) return json.data as JudicialProcess;
         }
-    } catch {}
+        if (res.status === 204) {
+            const process = mockProcesses.find(p => p.id === id);
+            return simulateDelay(process);
+        }
+        if (res.status === 404) {
+            return undefined;
+        }
+        if (res.status !== 404) {
+            console.error(`[processService] Falha ao buscar processo ${id}:`, await readApiError(res));
+        }
+        return undefined;
+    } catch (error) {
+        console.error(`[processService] Erro ao buscar processo ${id}:`, error);
+    }
     const process = mockProcesses.find(p => p.id === id);
     return simulateDelay(process);
 };
 
 export const saveProcess = async (process: JudicialProcess): Promise<JudicialProcess> => {
     if (process.id && process.id !== 'new') {
+        let res: Response;
         try {
-            const res = await fetch(`/api/processes/${process.id}`, {
+            res = await fetch(buildApiUrl(`/api/processes/${process.id}`), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(process),
             });
-            if (res.ok) return process;
-        } catch {}
-        // Fallback to mock update if API not available
-        mockProcesses = mockProcesses.map(p => p.id === process.id ? process : p);
-        return simulateDelay(process);
+        } catch (error) {
+            console.error(`[processService] Erro de rede ao atualizar processo ${process.id}:`, error);
+            mockProcesses = mockProcesses.map(p => p.id === process.id ? process : p);
+            return simulateDelay(process);
+        }
+
+        if (res.ok) {
+            const json = await readJsonSafe<{ ok?: boolean; data?: JudicialProcess }>(res);
+            if (json?.ok && json.data) return json.data;
+            return process;
+        }
+
+        if (res.status === 204) {
+            mockProcesses = mockProcesses.map(p => p.id === process.id ? process : p);
+            return simulateDelay(process);
+        }
+
+        const message = await readApiError(res);
+        throw new Error(message || 'Falha ao atualizar processo');
     } else {
-        // Create via API when available
+        let res: Response;
         try {
-            const res = await fetch('/api/processes', {
+            res = await fetch(buildApiUrl('/api/processes'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(process),
             });
-            if (res.ok) {
-                const json = await res.json();
-                if (json?.ok && json.data) return json.data as JudicialProcess;
+        } catch (error) {
+            console.error('[processService] Erro de rede ao criar processo:', error);
+            const newProcess = { ...process, id: new Date().getTime().toString() };
+            mockProcesses.push(newProcess);
+            return simulateDelay(newProcess);
+        }
+
+        if (res.ok) {
+            const json = await readJsonSafe<{ ok?: boolean; data?: JudicialProcess }>(res);
+            if (json?.ok && json.data) return json.data;
+            const createdProcess = { ...process };
+            if (!createdProcess.id || createdProcess.id === 'new') {
+                createdProcess.id = new Date().getTime().toString();
             }
-        } catch {}
-        // Fallback mock creation
-        const newProcess = { ...process, id: new Date().getTime().toString() };
-        mockProcesses.push(newProcess);
-        return simulateDelay(newProcess);
+            return createdProcess;
+        }
+
+        if (res.status === 204) {
+            const newProcess = { ...process, id: new Date().getTime().toString() };
+            mockProcesses.push(newProcess);
+            return simulateDelay(newProcess);
+        }
+
+        const message = await readApiError(res);
+        throw new Error(message || 'Falha ao criar processo');
     }
 };
