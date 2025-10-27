@@ -31,8 +31,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
   if (!id || Array.isArray(id)) return res.status(400).json({ ok: false, error: 'Invalid id' });
 
+  console.log('[api/processes/[id]] incoming request', {
+    method: req.method,
+    id,
+    url: req.url,
+  });
+
   const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_DATABASE, DB_CHARSET } = process.env;
   if (!DB_HOST || !DB_USER || !DB_DATABASE) {
+    console.log('[api/processes/[id]] missing DB configuration, returning 204');
     return res.status(204).end();
   }
 
@@ -53,6 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const row = (rows as PericiaRow[])[0];
       if (!row) {
         await conn.end();
+        console.log('[api/processes/[id]] id not found in database', { id });
         return res.status(404).json({ ok: false, error: 'Not found' });
       }
 
@@ -109,6 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await conn.end();
     return res.status(405).end('Method Not Allowed');
   } catch (e: any) {
+    console.error('[api/processes/[id]] unexpected error', e);
     // Return 204 so client falls back if needed
     return res.status(204).end();
   }

@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
 import { isRequestAuthenticated, redirectToLogin } from '../../lib/auth-server';
@@ -20,7 +20,10 @@ const applyProcessNumberMask = (value: string): string => {
 // --- Modal Components ---
 
 const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: ReactNode }> = ({ isOpen, onClose, title, children }) => {
-    if (!isOpen) return null;
+    if (!isOpen) {
+        console.log('não abriu'); 
+        return null;
+    }
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 transition-opacity duration-300" aria-modal="true" role="dialog">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale">
