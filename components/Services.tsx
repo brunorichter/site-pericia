@@ -27,11 +27,11 @@ const services = [
     title: "Pareceres Técnicos Extrajudiciais",
     description: "Elaboração de pareceres para mediações, arbitragens e para embasar decisões antes da judicialização de um conflito."
   },
-  {
-    icon: <ShieldIcon />,
-    title: "Consultoria em Segurança Elétrica",
-    description: "Análise de riscos, adequação à NR-10 e implementação de medidas de proteção para ambientes industriais e comerciais."
-  },
+  // {
+  //   icon: <ShieldIcon />,
+  //   title: "Consultoria em Segurança Elétrica",
+  //   description: "Análise de riscos, adequação à NR-10 e implementação de medidas de proteção para ambientes industriais e comerciais."
+  // },
 ];
 
 const Services = (): JSX.Element => {

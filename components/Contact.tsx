@@ -82,13 +82,13 @@ const Contact = (): JSX.Element => {
                   <p className="text-brand-gray">bruno@richter.eng.br</p>
                 </div>
             </div>
-            <div className="flex items-start p-6 bg-brand-dark-secondary rounded-lg">
+            {/* <div className="flex items-start p-6 bg-brand-dark-secondary rounded-lg">
                 <div className="text-brand-cyan-400 mt-1 mr-4"><PhoneIcon /></div>
                 <div>
                   <h3 className="text-xl font-bold text-white">Telefone / WhatsApp</h3>
                   <p className="text-brand-gray">(51) 99633-8120</p>
                 </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

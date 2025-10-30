@@ -13,7 +13,7 @@ const About = (): JSX.Element => {
               Atuando como perito judicial e assistente técnico, nosso trabalho é pautado pela imparcialidade, rigor técnico e profundo conhecimento em engenharia elétrica. A missão é fornecer ao Judiciário e às partes envolvidas subsídios técnicos claros, objetivos e fundamentados para a correta tomada de decisão.
             </p>
             <p className="text-brand-gray">
-              Com vasta experiência em sistemas elétricos de potência, instalações industriais e prediais, e normas regulamentadoras, oferecemos um serviço de excelência, focado em elucidar as causas e consequências de eventos complexos, garantindo a justiça e a segurança.
+              Com experiência em sistemas elétricos de potência e normas regulamentadoras, oferecemos um serviço de excelência, focado em elucidar as causas e consequências de eventos complexos, garantindo a justiça e a segurança.
             </p>
           </div>
           <div className="md:w-1/2 flex justify-center items-center p-8 bg-brand-dark rounded-lg shadow-2xl">
