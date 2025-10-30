@@ -5,7 +5,7 @@ import { isRequestAuthenticated, redirectToLogin } from '../../lib/auth-server';
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { getProcesses } from '../../services/processService';
+import { getProcesses, getProcessPayments } from '../../services/processService';
 import { JudicialProcess, ProcessStatus, Payment, JusticeType, PericiaType } from '../../types';
 
 // --- Modal Component ---
@@ -13,7 +13,7 @@ const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; chi
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 transition-opacity duration-300" aria-modal="true" role="dialog">
-            <div className="bg-brand-dark rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale">
+            <div className="bg-gray-200 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale">
                 <div className="flex justify-between items-center p-5 border-b sticky top-0 bg-brand-dark rounded-t-lg z-10">
                     <h3 className="text-xl font-semibold text-white">{title}</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-3xl leading-none" aria-label="Fechar">&times;</button>
@@ -36,12 +36,15 @@ const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; chi
 // --- Payment Report Modal ---
 interface ReportPayment extends Payment {
     processNumber: string;
+    processAuthor?: string;
 }
 
 interface ReportMonth {
     monthName: string;
     payments: ReportPayment[];
     total: number;
+    amount: number;
+    taxes: number;
 }
 
 interface ReportData {
@@ -58,11 +61,64 @@ interface PaymentReportModalProps {
 const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose, processes }) => {
     const [year, setYear] = useState<number>(new Date().getFullYear());
     const [reportData, setReportData] = useState<ReportData | null>(null);
+    const [paymentsByProcess, setPaymentsByProcess] = useState<Record<string, Payment[]>>({});
+    const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+    const [loadError, setLoadError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        let cancelled = false;
+
+        const fetchPayments = async () => {
+            setIsLoadingPayments(true);
+            setLoadError(null);
+            try {
+                const entries = await Promise.all(processes.map(async (process) => {
+                    const processId = process.id;
+                    if (!processId || processId === 'new') {
+                        return [processId ?? '', process.feesReceived ?? []] as const;
+                    }
+                    const payments = await getProcessPayments(processId);
+                    if (payments.length > 0) {
+                        return [processId, payments] as const;
+                    }
+                    return [processId, process.feesReceived ?? []] as const;
+                }));
+
+                if (cancelled) {
+                    return;
+                }
+
+                const map: Record<string, Payment[]> = {};
+                entries.forEach(([id, payments]) => {
+                    if (id) {
+                        map[id] = payments;
+                    }
+                });
+                setPaymentsByProcess(map);
+            } catch (error) {
+                if (!cancelled) {
+                    setLoadError('Não foi possível carregar os pagamentos do banco de dados.');
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsLoadingPayments(false);
+                }
+            }
+        };
+
+        fetchPayments();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isOpen, processes]);
 
     const handleGenerateReport = () => {
         const filteredPayments: ReportPayment[] = [];
         processes.forEach(process => {
-            process.feesReceived.forEach(payment => {
+            const payments = paymentsByProcess[process.id] ?? process.feesReceived ?? [];
+            payments.forEach(payment => {
                 if (new Date(payment.date + 'T00:00:00').getFullYear() === year) {
                     filteredPayments.push({ ...payment, processNumber: process.processNumber });
                 }
@@ -89,14 +145,18 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
 
         Object.keys(groupedByMonth).map(monthKeyStr => {
             const monthKey = parseInt(monthKeyStr);
-            const monthPayments = groupedByMonth[monthKey].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            const monthTotal = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+            const monthPayments = groupedByMonth[monthKey].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            const monthAmount = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+            const monthTaxes = monthPayments.reduce((sum, p) => sum + (p.taxes || 0), 0);
+            const monthTotal = monthPayments.reduce((sum, p) => sum + p.total, 0);
             grandTotal += monthTotal;
 
             months.push({
                 monthName: monthNames[monthKey],
                 payments: monthPayments,
                 total: monthTotal,
+                amount: monthAmount,
+                taxes: monthTaxes,
             });
         });
 
@@ -104,15 +164,23 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
 
         setReportData({ months, grandTotal });
     };
-    
+
     const handleClose = () => {
-        setReportData(null); // Reset report data on close
+        setReportData(null);
+        setPaymentsByProcess({});
+        setLoadError(null);
         onClose();
     };
 
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="Relatório de Pagamentos">
             <div className="space-y-4">
+                {isLoadingPayments && (
+                    <p className="text-sm text-gray-200 bg-gray-800 p-2 rounded">Carregando pagamentos...</p>
+                )}
+                {loadError && (
+                    <p className="text-sm text-red-400 bg-red-900 bg-opacity-30 p-2 rounded">{loadError}</p>
+                )}
                 <div className="flex items-end space-x-4 p-4 bg-gray-50 rounded-lg">
                     <div>
                         <label htmlFor="reportYear" className="block text-sm font-medium text-gray-700">Ano</label>
@@ -120,16 +188,17 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
                             type="number"
                             id="reportYear"
                             value={year}
-                            onChange={(e) => setYear(parseInt(e.target.value) || new Date().getFullYear())}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            onChange={(e) => setYear(parseInt(e.target.value, 10) || new Date().getFullYear())}
+                            className="mt-1 p-2 block w-full border rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             placeholder="YYYY"
                         />
                     </div>
                     <button
                         onClick={handleGenerateReport}
-                        className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                        disabled={isLoadingPayments}
+                        className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-brand-cyan-300 disabled:cursor-not-allowed"
                     >
-                        Gerar Relatório 
+                        {isLoadingPayments ? 'Carregando...' : 'Gerar Relatório'}
                     </button>
                 </div>
 
@@ -139,18 +208,23 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
                             <div className="space-y-6">
                                 {reportData.months.map(monthData => (
                                     <div key={monthData.monthName}>
-                                        <h4 className="text-xl font-semibold text-gray-800 mb-3 pb-2 border-b">{monthData.monthName}</h4>
+                                        <h4 className="text-xl font-semibold text-brand-cyan-700 mb-3 pb-2 border-b">{monthData.monthName}</h4>
                                         <ul className="space-y-2 mb-3">
                                             {monthData.payments.map(p => (
-                                                <li key={p.id} className="grid grid-cols-4 gap-4 items-center text-sm p-2 rounded-md hover:bg-gray-50">
-                                                    <span className="text-gray-600">{new Date(p.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
-                                                    <span className="text-gray-800 font-medium col-span-2">{p.processNumber} - {p.source}</span>
-                                                    <span className="text-green-700 font-semibold text-right">{p.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                <li key={p.id} className="grid grid-cols-6 gap-4 items-center text-sm p-2 rounded-md bg-gray-100 hover:bg-gray-50">
+                                                    <span className="text-gray-600 border">{new Date(p.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                                                    <span className="text-gray-800 border font-medium col-span-2">{p.processNumber} - {p.source}</span>
+                                                    <span className="text-gray-900 border font-semibold text-right">{p.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                    <span className="text-red-700 border font-semibold text-right">{`- ${p.taxes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}</span>
+                                                    <span className="text-green-700 border font-semibold text-right">{p.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                                 </li>
                                             ))}
                                         </ul>
-                                        <div className="text-right font-bold text-gray-800 pr-2">
-                                            Subtotal Mês: {monthData.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                        <div className="grid grid-cols-6 gap-4 items-center text-lg p-2 rounded-md bg-gray-100 hover:bg-gray-50 font-bold">
+                                            <span className="col-span-3">Subtotal Mês: </span>
+                                            <span className="col-span-1 font-normal text-right">{monthData.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                            <span className="col-span-1 font-normal text-right">{monthData.taxes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                            <span className="col-span-1 font-bold text-right">{monthData.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -169,7 +243,6 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
         </Modal>
     );
 };
-
 
 const statusColors: { [key in ProcessStatus]: string } = {
     [ProcessStatus.ENVIAR_PROPOSTA]: 'bg-yellow-100 text-yellow-800',
@@ -273,7 +346,7 @@ const ProcessListPage: React.FC = () => {
                         </Link>
                     </div>
                 </div>
-                <div className="grid mt-4 grid-cols-1 rounded-xl gap-6 4px_0_8px_0_rgba(209,213,219,1)] shadow-[4px_0_8px_0_rgba(255,255,255,1)] bg-brand-dark-secondary">
+                <div className="grid mt-4 grid-cols-1 pt-7 rounded-xl gap-6 4px_0_8px_0_rgba(209,213,219,1)] shadow-[4px_0_8px_0_rgba(255,255,255,1)] bg-brand-dark-secondary">
                     {processes.map(process => (
                         <ProcessCard key={process.id} process={process} />
                     ))}

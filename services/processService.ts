@@ -205,6 +205,30 @@ export const getProcessById = async (id: string): Promise<JudicialProcess | unde
     return simulateDelay(process);
 };
 
+export const getProcessPayments = async (processId: string): Promise<Payment[]> => {
+    if (!processId) return [];
+    try {
+        const res = await fetch(buildApiUrl(`/api/processes/${processId}/payments`));
+        if (!res.ok) {
+            if (res.status === 204) {
+                const process = mockProcesses.find(p => p.id === processId);
+                return process?.feesReceived ?? [];
+            }
+            console.error(`[processService] Falha ao buscar pagamentos do processo ${processId}:`, await readApiError(res));
+            return [];
+        }
+        const json = await readJsonSafe<{ ok?: boolean; data?: Payment[] }>(res);
+        if (json?.ok && Array.isArray(json.data)) {
+            return json.data;
+        }
+        return [];
+    } catch (error) {
+        console.error(`[processService] Erro ao buscar pagamentos do processo ${processId}:`, error);
+        const process = mockProcesses.find(p => p.id === processId);
+        return process?.feesReceived ?? [];
+    }
+};
+
 export const saveProcess = async (process: JudicialProcess): Promise<JudicialProcess> => {
     if (process.id && process.id !== 'new') {
         let res: Response;
