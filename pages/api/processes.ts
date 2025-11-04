@@ -1,14 +1,26 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { mapPericiaRowToJudicialProcess, PericiaRow, JudicialProcess, JusticeType, PericiaType } from '../../types';
 
-function toDateTime(value: string): string | null {
+function formatDateForDb(value: string): string | null {
   if (!value) return null;
-  const d = new Date(value);
+  const normalized = String(value).trim();
+
+  const isoDate = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoDate) {
+    return `${isoDate[3]}-${isoDate[2]}-${isoDate[1]}`;
+  }
+
+  const brDate = normalized.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (brDate) {
+    return `${brDate[1]}-${brDate[2]}-${brDate[3]}`;
+  }
+
+  const d = new Date(normalized);
   if (isNaN(d.getTime())) return null;
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd} 00:00:00`;
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return `${dd}-${mm}-${yyyy}`;
 }
 
 function latestFeeChargedAmount(jp: JudicialProcess): number | null {
@@ -60,11 +72,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const caseValue = typeof body.caseValue === 'number' ? body.caseValue : Number(body.caseValue || 0) || 0;
     const justiceBit = (body.justiceType === JusticeType.AJG) ? 1 : 0;
     const periciaBit = (body.periciaType === PericiaType.LOCAL) ? 1 : 0;
-    const startDate = toDateTime(body.startDate || '');
+    const startDate = formatDateForDb(body.startDate || '');
+    if (!startDate) {
+      await conn.end();
+      return res.status(400).json({ ok: false, error: 'Data de início inválida' });
+    }
     const valorCobrado = latestFeeChargedAmount(body as JudicialProcess) ?? 0;
     const statusText = String(body.status || '').trim();
 
-    const sql = `INSERT INTO pericia (processo, autor, reu, cidade, vara, status, descricao, valorCausa, fl_ajg, fl_tipo, valorCobrado, dataInicio)
+    const sql = `INSERT INTO pericia (processo, autor, reu, cidade, vara, status, descricao, valor_causa, fl_ajg, fl_tipo, valor_cobrado, dataInicio)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const params = [processNumber, plaintiff, defendant, city, 0, statusText, description, caseValue, justiceBit, periciaBit, valorCobrado, startDate];
     const [result] = await conn.execute(sql, params);
