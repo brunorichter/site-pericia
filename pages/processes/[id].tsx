@@ -21,7 +21,7 @@ const applyProcessNumberMask = (value: string): string => {
 
 const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: ReactNode }> = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) {
-        console.log('não abriu'); 
+        // console.log('não abriu'); 
         return null;
     }
     return (
@@ -647,7 +647,7 @@ const ProcessDetailPage: React.FC = () => {
                         {/* Column 2 */}
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="startDate" className="block text-sm font-medium text-gray-300">Data Inicial</label>
+                                <label htmlFor="startDate" className="block text-sm font-medium text-gray-300">Data Início do Processo</label>
                                 <input type="date" name="startDate" id="startDate" value={process.startDate} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
                             </div>
                             <div>
@@ -674,7 +674,7 @@ const ProcessDetailPage: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300">Proposta de Honorarios (R$)</label>
+                                <label className="block text-sm font-medium text-gray-300">Proposta de Honorários (R$)</label>
                                 <div className="mt-1 flex rounded-md shadow-sm">
                                     <span className="flex-grow px-3 py-2 border border-r-0 border-gray-300 bg-brand-dark-secondary text-white rounded-l-md sm:text-sm">
                                         {getLatestFeeCharged().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -683,7 +683,7 @@ const ProcessDetailPage: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300">Honorarios Recebidos (R$)</label>
+                                <label className="block text-sm font-medium text-gray-300">Honorários Recebidos (R$)</label>
                                 <div className="mt-1 flex rounded-md shadow-sm">
                                     <span className="flex-grow px-3 py-2 border border-r-0 border-gray-300 bg-brand-dark-secondary text-white rounded-l-md sm:text-sm">
                                         {getTotalFeesReceived().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -695,7 +695,7 @@ const ProcessDetailPage: React.FC = () => {
                     </div>
 
                     <div className="col-span-1 md:col-span-2">
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-300">Descricao</label>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-300">Descrição</label>
                         <textarea name="description" id="description" rows={4} value={process.description} onChange={handleChange} className="mt-1 block w-full border rounded-md px-4 py-2 bg-brand-dark-secondary text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>
                     </div>
                     

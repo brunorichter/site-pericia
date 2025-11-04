@@ -55,16 +55,18 @@ export interface JudicialProcess {
 export interface PericiaRow {
   id: number;
   processo: string;
+  classe: string;
   autor: string;
   reu: string;
   cidade: string;
+  assunto: string;
   vara: number;
-  status: 'Y' | 'N' | null;
+  status: string | null;
   descricao: string;
-  valorCausa: string | number;
+  valor_causa: string | number;
   fl_ajg: any; // BIT(1)
   fl_tipo: any; // BIT(1)
-  valorCobrado: string | number;
+  valor_cobrado: string | number;
   dtins: string | Date;
   dataPericia: string | Date;
   dataInicio: string | Date;
@@ -102,6 +104,17 @@ function bitToBool(v: any): boolean {
 function toISODate(value: any): string {
   try {
     if (!value) return '';
+    if (typeof value === 'string') {
+      const normalized = value.trim();
+      const simple = normalized.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (simple) {
+        return `${simple[1]}-${simple[2]}-${simple[3]}`;
+      }
+      const br = normalized.match(/^(\d{2})-(\d{2})-(\d{4})/);
+      if (br) {
+        return `${br[3]}-${br[2]}-${br[1]}`;
+      }
+    }
     const d = typeof value === 'string' ? new Date(value) : value;
     if (isNaN(d.getTime())) return '';
     return d.toISOString().slice(0, 10);
@@ -118,7 +131,7 @@ export function mapPericiaRowToJudicialProcess(r: PericiaRow): JudicialProcess {
   const allStatuses = Object.values(ProcessStatus) as string[];
   const status = (allStatuses.includes(statusStr) ? (statusStr as ProcessStatus) : ProcessStatus.ELABORACAO_LAUDO);
 
-  const valorCobrado = Number(r.valorCobrado || 0) || 0;
+  const valorCobrado = Number(r.valor_cobrado || 0) || 0;
   const feesCharged: FeeProposal[] = valorCobrado > 0
     ? [{ id: `${r.id}-vc`, date: toISODate(r.dtins) || toISODate(r.dataInicio) || new Date().toISOString().slice(0, 10), amount: valorCobrado }]
     : [];
@@ -133,7 +146,7 @@ export function mapPericiaRowToJudicialProcess(r: PericiaRow): JudicialProcess {
     justiceType: ajg ? JusticeType.AJG : JusticeType.PARTICULAR,
     periciaType: tipoLocal ? PericiaType.LOCAL : PericiaType.DOCUMENTAL,
     startDate: toISODate(r.dataInicio) || '',
-    caseValue: Number(r.valorCausa || 0) || 0,
+    caseValue: Number(r.valor_causa || 0) || 0,
     feesCharged,
     feesReceived: [],
     description: r.descricao || '',
