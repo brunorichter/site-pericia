@@ -516,8 +516,17 @@ const ProcessDetailPage: React.FC = () => {
     const [saveError, setSaveError] = useState<string | null>(null);
     const [isFeesChargedModalOpen, setFeesChargedModalOpen] = useState(false);
     const [isFeesReceivedModalOpen, setFeesReceivedModalOpen] = useState(false);
+    const [caseValueInput, setCaseValueInput] = useState('');
     
     const isNew = id === 'new';
+    const labelClasses = "text-xs font-semibold uppercase tracking-[0.2em] text-white";
+    const fieldRowClasses = "grid gap-2 md:grid-cols-[220px_minmax(0,1fr)] items-center";
+    const inputClasses = "w-full rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3 text-sm text-white placeholder:text-brand-cyan-100/60 focus:border-brand-cyan-300 focus:outline-none focus:ring-2 focus:ring-brand-cyan-500/40";
+
+    const formatCurrencyBRL = (value: number): string => {
+        const safeValue = Number.isFinite(value) ? value : 0;
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(safeValue);
+    };
 
     const fetchProcess = useCallback(async () => {
         if (typeof id !== 'string') return;
@@ -553,6 +562,12 @@ const ProcessDetailPage: React.FC = () => {
             fetchProcess();
         }
     }, [router, router.isReady, fetchProcess]);
+
+    useEffect(() => {
+        if (process) {
+            setCaseValueInput(formatCurrencyBRL(process.caseValue || 0));
+        }
+    }, [process?.caseValue]);
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -561,10 +576,18 @@ const ProcessDetailPage: React.FC = () => {
             const updatedValue =
                 name === 'processNumber'
                     ? applyProcessNumberMask(value)
-                    : name === 'caseValue'
-                    ? parseFloat(value) || 0
                     : value;
             setProcess({ ...process, [name]: updatedValue });
+        }
+    };
+
+    const handleCaseValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value || '';
+        const digitsOnly = rawValue.replace(/\D/g, '');
+        const numericValue = digitsOnly.length ? Number(digitsOnly) / 100 : 0;
+        setCaseValueInput(formatCurrencyBRL(numericValue));
+        if (process) {
+            setProcess({ ...process, caseValue: numericValue });
         }
     };
     
@@ -605,109 +628,241 @@ const ProcessDetailPage: React.FC = () => {
     return (
         <>
             <Header />
-            <div className="bg-brand-dark min-h-screen pt-20 md:pt-24">
-                <div className="p-8 rounded-xl shadow-[4px_0_8px_0_rgba(209,213,219,1)] hover:shadow-[4px_0_8px_0_rgba(255,255,255,1)] transition-shadow duration-300 max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold text-white mb-6 border-b pb-4">
-                    {isNew ? 'Adicionar Novo Processo' : `Processo: ${process.processNumber}`}
-                </h1>
+            <div className="bg-brand-dark min-h-screen pt-20 md:pt-24 pb-16">
+                <div className="container mx-auto px-6">
+                    <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-brand-cyan-900/40 bg-gradient-to-br from-brand-dark-secondary via-gray-900 to-brand-cyan-950 p-8 shadow-2xl shadow-black/40">
+                        <div className="pointer-events-none absolute inset-0 opacity-60 bg-gradient-to-r from-brand-cyan-600/20 via-transparent to-emerald-500/20" />
+                        <div className="relative space-y-8">
+                            <div className="flex flex-col gap-2 border-b border-white/10 pb-6">
+                                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-brand-cyan-100/70">Gestão de Processos</p>
+                                <h1 className="text-3xl font-bold text-white">{isNew ? 'Adicionar Novo Processo' : `Processo: ${process.processNumber}`}</h1>
+                                <p className="text-sm text-brand-cyan-100/70">Atualize os dados e acompanhe honorários em um só lugar.</p>
+                            </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Column 1 */}
-                        <div className="space-y-6">
-                            <div>
-                                <label htmlFor="processNumber" className="block text-sm font-medium text-gray-300">Número do Processo</label>
-                                <input type="text" name="processNumber" id="processNumber" value={process.processNumber} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm" placeholder="5006383-06.2025.8.21.0087" maxLength={25}/>
-                            </div>
-                            <div>
-                                <label htmlFor="plaintiff" className="block text-sm font-medium text-gray-300">Autor</label>
-                                <input type="text" name="plaintiff" id="plaintiff" value={process.plaintiff} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label htmlFor="defendant" className="block text-sm font-medium text-gray-300">Réu</label>
-                                <input type="text" name="defendant" id="defendant" value={process.defendant} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label htmlFor="city" className="block text-sm font-medium text-gray-300">Cidade</label>
-                                <input type="text" name="city" id="city" value={process.city} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label htmlFor="status" className="block text-sm font-medium text-gray-300">Status</label>
-                                <select name="status" id="status" value={process.status} onChange={handleChange} className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm">
-                                    {Object.values(ProcessStatus).map(status => (
-                                        <option key={status} value={status}>{status}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="caseValue" className="block text-sm font-medium text-gray-300">Valor da Causa (R$)</label>
-                                <input type="number" step="0.01" name="caseValue" id="caseValue" value={process.caseValue} onChange={handleChange} className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
-                                </div>
-                        </div>
-                        {/* Column 2 */}
-                        <div className="space-y-6">
-                            <div>
-                                <label htmlFor="startDate" className="block text-sm font-medium text-gray-300">Data Início do Processo</label>
-                                <input type="date" name="startDate" id="startDate" value={process.startDate} onChange={handleChange} required className="flex-grow px-3 py-2 border block w-full rounded-md border-gray-300 shadow-sm bg-brand-dark-secondary text-white focus:border-cyan-100 focus:ring-cyan-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300">Tipo de Perícia</label>
-                                <div className="mt-2 flex space-x-4">
-                                    {Object.values(PericiaType).map(type => (
-                                        <div key={type} className="flex items-center">
-                                            <input id={`pericia-${type}`} name="periciaType" type="radio" value={type} checked={process.periciaType === type} onChange={handleChange} className="flex-grow px-3 py-2 border block h-7 w-4 focus:ring-blue-500 text-blue-600 border-gray-300" />
-                                            <label htmlFor={`pericia-${type}`} className="ml-3 block text-sm font-medium text-gray-300">{type}</label>
+                            <form onSubmit={handleSubmit} className="space-y-8">
+                                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                                    <div className="space-y-6">
+                                        <div className={fieldRowClasses}>
+                                            <label htmlFor="processNumber" className={`${labelClasses} md:text-right`}>Número do Processo</label>
+                                            <input
+                                                type="text"
+                                                name="processNumber"
+                                                id="processNumber"
+                                                value={process.processNumber}
+                                                onChange={handleChange}
+                                                required
+                                                className={inputClasses}
+                                                placeholder="5006383-06.2025.8.21.0087"
+                                                maxLength={25}
+                                            />
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                                                        <div>
-                                <label className="block text-sm font-medium text-gray-300">Tipo de Processo</label>
-                                <div className="mt-2 flex space-x-4">
-                                    {Object.values(JusticeType).map(type => (
-                                        <div key={type} className="flex items-center">
-                                            <input id={`justica-${type}`} name="justicaType" type="radio" value={type} checked={process.justiceType === type} onChange={handleChange} className="flex-grow px-3 py-2 border block h-7 w-4 focus:ring-blue-500 text-blue-600 border-gray-300" />
-                                            <label htmlFor={`justica-${type}`} className="ml-3 block text-sm font-medium text-gray-300">{type}</label>
+                                        <div className={fieldRowClasses}>
+                                            <label htmlFor="plaintiff" className={`${labelClasses} md:text-right`}>Autor</label>
+                                            <input
+                                                type="text"
+                                                name="plaintiff"
+                                                id="plaintiff"
+                                                value={process.plaintiff}
+                                                onChange={handleChange}
+                                                required
+                                                className={inputClasses}
+                                            />
                                         </div>
-                                    ))}
+                                        <div className={fieldRowClasses}>
+                                            <label htmlFor="defendant" className={`${labelClasses} md:text-right`}>Réu</label>
+                                            <input
+                                                type="text"
+                                                name="defendant"
+                                                id="defendant"
+                                                value={process.defendant}
+                                                onChange={handleChange}
+                                                required
+                                                className={inputClasses}
+                                            />
+                                        </div>
+                                        <div className={fieldRowClasses}>
+                                            <label htmlFor="city" className={`${labelClasses} md:text-right`}>Cidade</label>
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                id="city"
+                                                value={process.city}
+                                                onChange={handleChange}
+                                                required
+                                                className={inputClasses}
+                                            />
+                                        </div>
+                                        <div className={fieldRowClasses}>
+                                            <label htmlFor="status" className={`${labelClasses} md:text-right`}>Status</label>
+                                            <select
+                                                name="status"
+                                                id="status"
+                                                value={process.status}
+                                                onChange={handleChange}
+                                                className={`${inputClasses} appearance-none pr-10`}
+                                            >
+                                                {Object.values(ProcessStatus).map(status => (
+                                                    <option key={status} value={status}>{status}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className={fieldRowClasses}>
+                                            <label htmlFor="caseValue" className={`${labelClasses} md:text-right`}>Valor da Causa</label>
+                                            <div className="rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
+                                                <input
+                                                    type="text"
+                                                    name="caseValue"
+                                                    id="caseValue"
+                                                    inputMode="numeric"
+                                                    value={caseValueInput}
+                                                    onChange={handleCaseValueChange}
+                                                    className="w-full bg-transparent text-base font-semibold text-white placeholder:text-brand-cyan-100/40 focus:outline-none focus:ring-0"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <div className={fieldRowClasses}>
+                                            <label htmlFor="startDate" className={`${labelClasses} md:text-right`}>Data Início do Processo</label>
+                                            <input
+                                                type="date"
+                                                name="startDate"
+                                                id="startDate"
+                                                value={process.startDate}
+                                                onChange={handleChange}
+                                                required
+                                                className={inputClasses}
+                                            />
+                                        </div>
+                                        <div className={fieldRowClasses}>
+                                            <span className={`${labelClasses} md:text-right`}>Tipo de Perícia</span>
+                                            <div className="flex flex-wrap gap-3">
+                                                {Object.values(PericiaType).map(type => {
+                                                    const active = process.periciaType === type;
+                                                    return (
+                                                        <label
+                                                            key={type}
+                                                            htmlFor={`pericia-${type}`}
+                                                            className={`cursor-pointer rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300 ${
+                                                                active
+                                                                    ? 'border-brand-cyan-400 bg-brand-cyan-500/10 text-white shadow-lg shadow-brand-cyan-900/20'
+                                                                    : 'border-white/10 text-gray-300 hover:border-white/30'
+                                                            }`}
+                                                        >
+                                                            <input
+                                                                id={`pericia-${type}`}
+                                                                name="periciaType"
+                                                                type="radio"
+                                                                value={type}
+                                                                checked={active}
+                                                                onChange={handleChange}
+                                                                className="sr-only"
+                                                            />
+                                                            {type}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                        <div className={fieldRowClasses}>
+                                            <span className={`${labelClasses} md:text-right`}>Tipo de Processo</span>
+                                            <div className="flex flex-wrap gap-3">
+                                                {Object.values(JusticeType).map(type => {
+                                                    const active = process.justiceType === type;
+                                                    return (
+                                                        <label
+                                                            key={type}
+                                                            htmlFor={`justica-${type}`}
+                                                            className={`cursor-pointer rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300 ${
+                                                                active
+                                                                    ? 'border-emerald-400 bg-emerald-500/10 text-white shadow-lg shadow-emerald-900/20'
+                                                                    : 'border-white/10 text-gray-300 hover:border-white/30'
+                                                            }`}
+                                                        >
+                                                            <input
+                                                                id={`justica-${type}`}
+                                                                name="justiceType"
+                                                                type="radio"
+                                                                value={type}
+                                                                checked={active}
+                                                                onChange={handleChange}
+                                                                className="sr-only"
+                                                            />
+                                                            {type}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                        <div className={fieldRowClasses}>
+                                            <span className={`${labelClasses} md:text-right`}>Proposta de Honorários</span>
+                                            <div className="flex items-center justify-between rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
+                                                <span className="text-base font-semibold text-white">
+                                                    {getLatestFeeCharged().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFeesChargedModalOpen(true)}
+                                                    className="rounded-full bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-brand-cyan-900/40 shadow-lg hover:from-brand-cyan-400 hover:to-brand-cyan-500"
+                                                >
+                                                    Gerenciar
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className={fieldRowClasses}>
+                                            <span className={`${labelClasses} md:text-right`}>Honorários Recebidos</span>
+                                            <div className="flex items-center justify-between rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
+                                                <span className="text-base font-semibold text-white">
+                                                    {getTotalFeesReceived().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFeesReceivedModalOpen(true)}
+                                                    className="rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-emerald-900/30 hover:from-emerald-300 hover:to-emerald-400"
+                                                >
+                                                    Gerenciar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300">Proposta de Honorários (R$)</label>
-                                <div className="mt-1 flex rounded-md shadow-sm">
-                                    <span className="flex-grow px-3 py-2 border border-r-0 border-gray-300 bg-brand-dark-secondary text-white rounded-l-md sm:text-sm">
-                                        {getLatestFeeCharged().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                    </span>
-                                    <button type="button" onClick={() => setFeesChargedModalOpen(true)} className="bg-gray-200 hover:bg-gray-300 px-4 rounded-r-md font-semibold text-sm">Gerenciar</button>
+                                <div className={fieldRowClasses}>
+                                    <label htmlFor="description" className={`${labelClasses} md:text-right`}>Descrição</label>
+                                    <textarea
+                                        name="description"
+                                        id="description"
+                                        rows={4}
+                                        value={process.description}
+                                        onChange={handleChange}
+                                        className={`${inputClasses} min-h-[120px]`}
+                                    ></textarea>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300">Honorários Recebidos (R$)</label>
-                                <div className="mt-1 flex rounded-md shadow-sm">
-                                    <span className="flex-grow px-3 py-2 border border-r-0 border-gray-300 bg-brand-dark-secondary text-white rounded-l-md sm:text-sm">
-                                        {getTotalFeesReceived().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                    </span>
-                                    <button type="button" onClick={() => setFeesReceivedModalOpen(true)} className="bg-gray-200 hover:bg-gray-300 px-4 rounded-r-md font-semibold text-sm">Gerenciar</button>
+
+                                {saveError && (
+                                    <p className="text-right text-sm text-red-300">{saveError}</p>
+                                )}
+
+                                <div className="flex flex-col gap-4 border-t border-white/10 pt-6 md:flex-row md:justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push('/processes')}
+                                        className="rounded-2xl border border-white/30 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:border-white/60"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSaving}
+                                        className="rounded-2xl bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-600 px-8 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-brand-cyan-900/40 shadow-xl transition hover:from-brand-cyan-400 hover:to-brand-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {isSaving ? 'Salvando...' : 'Salvar Processo'}
+                                    </button>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
-
-                    <div className="col-span-1 md:col-span-2">
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-300">Descrição</label>
-                        <textarea name="description" id="description" rows={4} value={process.description} onChange={handleChange} className="mt-1 block w-full border rounded-md px-4 py-2 bg-brand-dark-secondary text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>
-                    </div>
-                    
-                    {saveError && (
-                        <p className="text-sm text-red-400 text-right">{saveError}</p>
-                    )}
-                    <div className="flex justify-end space-x-4 pt-4 border-t mt-6">
-                        <button type="button" onClick={() => router.push('/processes')} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-md transition duration-300">Cancelar</button>
-                        <button type="submit" disabled={isSaving} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-md transition duration-300 disabled:bg-cyan-300">{isSaving ? 'Salvando...' : 'Salvar Processo'}</button>
-                    </div>
-                </form>
-            </div>
+                </div>
             </div>
 
             {/* Modals */}
