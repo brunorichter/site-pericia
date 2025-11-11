@@ -12,6 +12,7 @@ export enum ProcessStatus {
 export enum JusticeType {
   AJG = 'AJG',
   PARTICULAR = 'Particular',
+  MISTO = 'Misto',
 }
 
 export enum PericiaType {
@@ -101,6 +102,13 @@ function bitToBool(v: any): boolean {
   return Boolean(v);
 }
 
+function mapJusticeTypeFromDb(value: any): JusticeType {
+  if (value === null || typeof value === 'undefined') {
+    return JusticeType.MISTO;
+  }
+  return bitToBool(value) ? JusticeType.AJG : JusticeType.PARTICULAR;
+}
+
 function toISODate(value: any): string {
   try {
     if (!value) return '';
@@ -124,7 +132,6 @@ function toISODate(value: any): string {
 }
 
 export function mapPericiaRowToJudicialProcess(r: PericiaRow): JudicialProcess {
-  const ajg = bitToBool(r.fl_ajg);
   const tipoLocal = bitToBool(r.fl_tipo);
   // Map DB textual enum status directly to UI enum value when possible
   const statusStr = String(r.status ?? '').trim();
@@ -143,7 +150,7 @@ export function mapPericiaRowToJudicialProcess(r: PericiaRow): JudicialProcess {
     defendant: r.reu || '',
     city: r.cidade || '',
     status,
-    justiceType: ajg ? JusticeType.AJG : JusticeType.PARTICULAR,
+    justiceType: mapJusticeTypeFromDb(r.fl_ajg),
     periciaType: tipoLocal ? PericiaType.LOCAL : PericiaType.DOCUMENTAL,
     startDate: toISODate(r.dataInicio) || '',
     caseValue: Number(r.valor_causa || 0) || 0,

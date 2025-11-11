@@ -12,6 +12,12 @@ import {
 } from '../../../types';
 import { applyCors } from '../../../lib/cors';
 
+const mapJusticeTypeToDb = (type?: JusticeType | null): number | null => {
+  if (type === JusticeType.AJG) return 1;
+  if (type === JusticeType.MISTO) return null;
+  return 0;
+};
+
 function formatDateForDb(value: string): string | null {
   if (!value) return null;
   const normalized = String(value).trim();
@@ -119,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const city = body.city ?? '';
       const description = body.description ?? '';
       const caseValue = typeof body.caseValue === 'number' ? body.caseValue : Number(body.caseValue || 0) || 0;
-      const justiceBit = (body.justiceType === JusticeType.AJG) ? 1 : 0;
+      const justiceBit = mapJusticeTypeToDb(body.justiceType);
       const periciaBit = (body.periciaType === PericiaType.LOCAL) ? 1 : 0;
       const startDate = formatDateForDb(body.startDate || '');
       if (!startDate) {

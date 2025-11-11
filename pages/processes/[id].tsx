@@ -519,8 +519,7 @@ const ProcessDetailPage: React.FC = () => {
     const [caseValueInput, setCaseValueInput] = useState('');
     
     const isNew = id === 'new';
-    const labelClasses = "text-xs font-semibold uppercase tracking-[0.2em] text-white";
-    const fieldRowClasses = "grid gap-2 md:grid-cols-[220px_minmax(0,1fr)] items-center";
+    const labelClasses = "block text-xs font-semibold uppercase tracking-[0.2em] text-white mb-2";
     const inputClasses = "w-full rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3 text-sm text-white placeholder:text-brand-cyan-100/60 focus:border-brand-cyan-300 focus:outline-none focus:ring-2 focus:ring-brand-cyan-500/40";
 
     const formatCurrencyBRL = (value: number): string => {
@@ -642,8 +641,8 @@ const ProcessDetailPage: React.FC = () => {
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                                     <div className="space-y-6">
-                                        <div className={fieldRowClasses}>
-                                            <label htmlFor="processNumber" className={`${labelClasses} md:text-right`}>Número do Processo</label>
+                                        <div>
+                                            <label htmlFor="processNumber" className={labelClasses}>Número do Processo</label>
                                             <input
                                                 type="text"
                                                 name="processNumber"
@@ -656,8 +655,8 @@ const ProcessDetailPage: React.FC = () => {
                                                 maxLength={25}
                                             />
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <label htmlFor="plaintiff" className={`${labelClasses} md:text-right`}>Autor</label>
+                                        <div>
+                                            <label htmlFor="plaintiff" className={labelClasses}>Autor</label>
                                             <input
                                                 type="text"
                                                 name="plaintiff"
@@ -668,8 +667,8 @@ const ProcessDetailPage: React.FC = () => {
                                                 className={inputClasses}
                                             />
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <label htmlFor="defendant" className={`${labelClasses} md:text-right`}>Réu</label>
+                                        <div>
+                                            <label htmlFor="defendant" className={labelClasses}>Réu</label>
                                             <input
                                                 type="text"
                                                 name="defendant"
@@ -680,8 +679,8 @@ const ProcessDetailPage: React.FC = () => {
                                                 className={inputClasses}
                                             />
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <label htmlFor="city" className={`${labelClasses} md:text-right`}>Cidade</label>
+                                        <div>
+                                            <label htmlFor="city" className={labelClasses}>Cidade</label>
                                             <input
                                                 type="text"
                                                 name="city"
@@ -692,8 +691,8 @@ const ProcessDetailPage: React.FC = () => {
                                                 className={inputClasses}
                                             />
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <label htmlFor="status" className={`${labelClasses} md:text-right`}>Status</label>
+                                        <div>
+                                            <label htmlFor="status" className={labelClasses}>Status</label>
                                             <select
                                                 name="status"
                                                 id="status"
@@ -706,9 +705,9 @@ const ProcessDetailPage: React.FC = () => {
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <label htmlFor="caseValue" className={`${labelClasses} md:text-right`}>Valor da Causa</label>
-                                            <div className="rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
+                                        <div>
+                                            <label htmlFor="caseValue" className={labelClasses}>Valor da Causa</label>
+                                            <div className="mt-2 rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
                                                 <input
                                                     type="text"
                                                     name="caseValue"
@@ -722,8 +721,8 @@ const ProcessDetailPage: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-6">
-                                        <div className={fieldRowClasses}>
-                                            <label htmlFor="startDate" className={`${labelClasses} md:text-right`}>Data Início do Processo</label>
+                                        <div>
+                                            <label htmlFor="startDate" className={labelClasses}>Data Início do Processo</label>
                                             <input
                                                 type="date"
                                                 name="startDate"
@@ -734,16 +733,16 @@ const ProcessDetailPage: React.FC = () => {
                                                 className={inputClasses}
                                             />
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <span className={`${labelClasses} md:text-right`}>Tipo de Perícia</span>
-                                            <div className="flex flex-wrap gap-3">
+                                        <div>
+                                            <label className={labelClasses}>Tipo de Perícia</label>
+                                            <div className="mt-3 flex flex-wrap gap-3">
                                                 {Object.values(PericiaType).map(type => {
                                                     const active = process.periciaType === type;
                                                     return (
                                                         <label
                                                             key={type}
                                                             htmlFor={`pericia-${type}`}
-                                                            className={`cursor-pointer rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300 ${
+                                                            className={`cursor-pointer rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300${
                                                                 active
                                                                     ? 'border-brand-cyan-400 bg-brand-cyan-500/10 text-white shadow-lg shadow-brand-cyan-900/20'
                                                                     : 'border-white/10 text-gray-300 hover:border-white/30'
@@ -764,9 +763,9 @@ const ProcessDetailPage: React.FC = () => {
                                                 })}
                                             </div>
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <span className={`${labelClasses} md:text-right`}>Tipo de Processo</span>
-                                            <div className="flex flex-wrap gap-3">
+                                        <div>
+                                            <label className={labelClasses}>Tipo de Processo</label>
+                                            <div className="mt-3 flex flex-wrap gap-3">
                                                 {Object.values(JusticeType).map(type => {
                                                     const active = process.justiceType === type;
                                                     return (
@@ -794,9 +793,9 @@ const ProcessDetailPage: React.FC = () => {
                                                 })}
                                             </div>
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <span className={`${labelClasses} md:text-right`}>Proposta de Honorários</span>
-                                            <div className="flex items-center justify-between rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
+                                        <div>
+                                            <label className={labelClasses}>Proposta de Honorários</label>
+                                            <div className="mt-2 flex items-center justify-between rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
                                                 <span className="text-base font-semibold text-white">
                                                     {getLatestFeeCharged().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                                 </span>
@@ -809,9 +808,9 @@ const ProcessDetailPage: React.FC = () => {
                                                 </button>
                                             </div>
                                         </div>
-                                        <div className={fieldRowClasses}>
-                                            <span className={`${labelClasses} md:text-right`}>Honorários Recebidos</span>
-                                            <div className="flex items-center justify-between rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
+                                        <div>
+                                            <label className={labelClasses}>Honorários Recebidos</label>
+                                            <div className="mt-2 flex items-center justify-between rounded-2xl border border-brand-cyan-900/30 bg-brand-dark-secondary/70 px-4 py-3">
                                                 <span className="text-base font-semibold text-white">
                                                     {getTotalFeesReceived().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                                 </span>
@@ -827,15 +826,15 @@ const ProcessDetailPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className={fieldRowClasses}>
-                                    <label htmlFor="description" className={`${labelClasses} md:text-right`}>Descrição</label>
+                                <div>
+                                    <label htmlFor="description" className={labelClasses}>Descrição</label>
                                     <textarea
                                         name="description"
                                         id="description"
                                         rows={4}
                                         value={process.description}
                                         onChange={handleChange}
-                                        className={`${inputClasses} min-h-[120px]`}
+                                        className={`${inputClasses} mt-2 min-h-[120px]`}
                                     ></textarea>
                                 </div>
 
