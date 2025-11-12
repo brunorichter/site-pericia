@@ -18,9 +18,13 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Verificar fingerprint SSH (opcional, mas recomendado)
+      - name: Preparar known_hosts e fingerprint
         run: |
-          ssh-keyscan -p "${{ secrets.KINGHOST_PORT }}" "${{ secrets.KINGHOST_HOST }}" >> ~/.ssh/known_hosts
+          set -euo pipefail
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            ssh-keyscan -H -p "${{ secrets.KINGHOST_PORT }}" "${{ secrets.KINGHOST_HOST }}" >> ~/.ssh/known_hosts
+            chmod 644 ~/.ssh/known_hosts
 
       - name: Deploy remoto por SSH
         uses: appleboy/ssh-action@v1.0.3
