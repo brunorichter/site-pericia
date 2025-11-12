@@ -18,28 +18,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Preparar known_hosts e fingerprint
-        run: |
-          set -euo pipefail
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
-            touch ~/.ssh/known_hosts
-            chmod 644 ~/.ssh/known_hosts
-            
-      - name: Diagnóstico de rede até o SSH da KingHost
-        run: |
-          set -x
-          echo "Host: ${{ secrets.KINGHOST_HOST }}  Porta: ${{ secrets.KINGHOST_PORT }}"
-          # Resolver DNS
-          getent ahostsv4 "${{ secrets.KINGHOST_HOST }}" || true
-          # Testar TCP na porta
-          nc -vz -w 5 "${{ secrets.KINGHOST_HOST }}" "${{ secrets.KINGHOST_PORT }}" || true
-      
-      - name: Registrar fingerprint
-        run: |
-          set -euo pipefail
-          ssh-keyscan -H -p "${{ secrets.KINGHOST_PORT }}" "${{ secrets.KINGHOST_HOST }}" >> ~/.ssh/known_hosts
-
       - name: Instalar sshpass
         run: |
           sudo apt-get update
