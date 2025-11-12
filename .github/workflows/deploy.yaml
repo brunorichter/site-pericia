@@ -23,8 +23,13 @@ jobs:
           set -euo pipefail
             mkdir -p ~/.ssh
             chmod 700 ~/.ssh
-            ssh-keyscan -H -p "${{ secrets.KINGHOST_PORT }}" "${{ secrets.KINGHOST_HOST }}" >> ~/.ssh/known_hosts
+            touch ~/.ssh/known_hosts
             chmod 644 ~/.ssh/known_hosts
+
+      - name: Registrar fingerprint
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H -p "${{ secrets.KINGHOST_PORT }}" "${{ secrets.KINGHOST_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy remoto por SSH
         uses: appleboy/ssh-action@v1.0.3
