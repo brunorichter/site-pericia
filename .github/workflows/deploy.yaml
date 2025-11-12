@@ -25,9 +25,9 @@ jobs:
 
       - name: Deploy remoto via SSH com senha
         run: |
-          sshpass -p "${{ secrets.KINGHOST_PASSWORD }}" \
-          ssh -o StrictHostKeyChecking=no -p "${{ secrets.KINGHOST_PORT }}" \
-            "${{ secrets.KINGHOST_USER }}@${{ secrets.KINGHOST_HOST }}" << 'EOF'
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" \
+          ssh -o StrictHostKeyChecking=no -p "${{ secrets.SSH_PORT }}" \
+          "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" << 'EOF'
             set -euo pipefail
 
             echo "Ativando Node v22.1.0"
