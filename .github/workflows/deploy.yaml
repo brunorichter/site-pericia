@@ -1,4 +1,4 @@
-name: Deploy KingHost
+name: Deploy KingHost 2.0
 
 on:
   release:
@@ -22,14 +22,16 @@ jobs:
         run: |
           ssh-keyscan -p "${{ secrets.KINGHOST_PORT }}" "${{ secrets.KINGHOST_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy remoto por SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.KINGHOST_HOST }}
-          username: ${{ secrets.KINGHOST_USER }}
-          key: ${{ secrets.KINGHOST_SSH_KEY }}
-          port: ${{ secrets.KINGHOST_PORT }}
-          script: |
+      - name: Instalar sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Deploy remoto via SSH com senha
+        run: |
+          sshpass -p "${{ secrets.KINGHOST_PASSWORD }}" \
+          ssh -o StrictHostKeyChecking=no -p "${{ secrets.KINGHOST_PORT }}" \
+            "${{ secrets.KINGHOST_USER }}@${{ secrets.KINGHOST_HOST }}" << 'EOF'
             set -euo pipefail
 
             echo "Ativando Node v22.1.0"
@@ -86,3 +88,4 @@ jobs:
             fi
 
             echo "Deploy concluído"
+          EOF
