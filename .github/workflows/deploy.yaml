@@ -26,9 +26,9 @@ jobs:
       - name: Deploy remoto via SSH com senha
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" \
-          ssh -o StrictHostKeyChecking=no -p "${{ secrets.SSH_PORT }}" \
+          ssh -4 -o StrictHostKeyChecking=no -p "22" \
           "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" << 'EOF'
-            set -euo pipefail
+          set -euo pipefail
 
             echo "Ativando Node v22.1.0"
             export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -55,7 +55,7 @@ jobs:
             fi
 
             echo "Clonando repositório"
-            git clone https://github.com/brunorichter/site-pericia.git
+            git clone https://github.com/bruno***/site-pericia.git
 
             echo "Restaurando .env"
             if [ -f antigo/.env ]; then
