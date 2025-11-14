@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { getProcesses, getProcessPayments } from '../../services/processService';
 import { JudicialProcess, ProcessStatus, Payment, JusticeType, PericiaType } from '../../types';
+import { Combobox } from '../../components/ui/combobox';
 
 // --- Modal Component ---
 const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: ReactNode }> = ({ isOpen, onClose, title, children }) => {
@@ -252,7 +253,16 @@ const statusColors: { [key in ProcessStatus]: string } = {
     [ProcessStatus.PERICIA_MARCADA]: 'bg-amber-100 text-amber-800',
     [ProcessStatus.AGUARDANDO_PAGAMENTO]: 'bg-green-100 text-green-800',
     [ProcessStatus.ARQUIVADO]: 'bg-gray-200 text-gray-800',
+    [ProcessStatus.RECUSADO]: 'bg-gray-200 text-gray-800',
 };
+
+const statusFilterOptions = [
+    { value: 'all', label: 'Todos' },
+    ...Object.values(ProcessStatus).map((status) => ({
+        value: status,
+        label: status,
+    })),
+] as { value: ProcessStatus | 'all'; label: string }[];
 
 const justiceTypeColors: { [key in JusticeType]: string } = {
     [JusticeType.AJG]: 'bg-red-100 text-red-800',
@@ -274,16 +284,16 @@ const Badge: React.FC<{ text: string; colorClass: string }> = ({ text, colorClas
 // -- Label process number ---
 const ProcessNumberBadge: React.FC<{ number: string; className?: string }> = ({ number, className = "" }) => (
     <h3 className={`inline-flex items-center gap-2 text-base font-semibold tracking-wide text-brand-cyan-50 bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-700 px-4 py-1 rounded-full shadow-lg shadow-brand-cyan-900/30 ${className}`}>
-        <span className="text-xs uppercase text-brand-cyan-100">Processo</span>
-        {number}
+        {/* <span className="text-xs uppercase text-white">Processo</span> */}
+        <span className="text-1xl uppercase text-white">{number}</span>
     </h3>
 );
 
 // --- Process Card Component ---
 const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
     <Link href={`/processes/${process.id}`} className="block">
-        <div className="group relative overflow-hidden rounded-3xl border border-brand-cyan-900/40 bg-gradient-to-br from-brand-dark-secondary via-gray-900 to-brand-cyan-950 p-6 shadow-xl shadow-black/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-cyan-900/40">
-            <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-r from-brand-cyan-600/20 via-transparent to-brand-cyan-400/20" />
+        <div className="group relative min-h-[319px] max-h-[320px] overflow-hidden rounded-3xl border border-brand-cyan-900/40 bg-gradient-to-tr from-brand-cyan-600 via-cyan-900 to-brand-cyan-700 p-6 shadow-xl shadow-black/30 transition-all duration-500 hover:scale-105 hover:shadow-lg  hover:shadow-white/20">
+            <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-bl from-brand-cyan-600 via-cyan-900 to-brand-cyan-700" />
             <div className="relative space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <ProcessNumberBadge number={process.processNumber} />
@@ -312,13 +322,13 @@ const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
     </Link>
 );
 
-
 const ProcessListPage: React.FC = () => {
     const router = useRouter();
     const [processes, setProcesses] = useState<JudicialProcess[]>([]);
     const [loading, setLoading] = useState(true);
     const [isReportModalOpen, setReportModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<ProcessStatus | 'all'>('all');
 
     useEffect(() => {
         const fetchProcesses = async () => {
@@ -331,6 +341,10 @@ const ProcessListPage: React.FC = () => {
     }, [router]);
 
     const filteredProcesses = processes.filter((process) => {
+        const matchesStatus = statusFilter === 'all' || process.status === statusFilter;
+        if (!matchesStatus) {
+            return false;
+        }
         const term = searchTerm.trim().toLowerCase();
         if (!term) return true;
 
@@ -353,9 +367,17 @@ const ProcessListPage: React.FC = () => {
                 <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-white">Lista de Processos</h1>
-                        <p className="text-sm text-brand-cyan-100/80 mt-1">Filtre por número do processo ou partes para localizar rapidamente.</p>
+                        <p className="text-sm text-brand-cyan-100/80 mt-1 text-white">Filtre por número do processo ou partes para localizar rapidamente.</p>
                     </div>
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-3 w-full md:w-auto">
+                        <Combobox
+                            className="w-full md:w-60"
+                            value={statusFilter}
+                            onChange={(value) => setStatusFilter(value as ProcessStatus | 'all')}
+                            options={statusFilterOptions}
+                            placeholder="Selecione o status"
+                            searchPlaceholder="Buscar status..."
+                        />
                         <div className="relative flex-1 min-w-[240px]">
                             <label htmlFor="process-search" className="sr-only">Buscar processos</label>
                             <input
@@ -403,8 +425,8 @@ const ProcessListPage: React.FC = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="mt-10 rounded-3xl border border-dashed border-brand-cyan-500/40 bg-brand-dark-secondary/80 p-10 text-center text-brand-cyan-100">
-                        Nenhum processo encontrado para "{searchTerm}".
+                    <div className="mt-10 rounded-3xl border border-dashed border-brand-cyan-500/40 bg-brand-dark-secondary/80 p-10 text-center text-white">
+                        Nenhum processo encontrado para os filtros selecionados{searchTerm ? ` e o termo "${searchTerm}"` : ''}.
                     </div>
                 )}
                 <PaymentReportModal 

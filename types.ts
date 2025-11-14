@@ -7,6 +7,7 @@ export enum ProcessStatus {
   PERICIA_MARCADA = 'Perícia Marcada',
   AGUARDANDO_PAGAMENTO = 'Aguardando Pagamento',
   ARQUIVADO = 'Arquivado',
+  RECUSADO = 'Recusado',
 }
 
 export enum JusticeType {
