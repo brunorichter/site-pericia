@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (req.method === 'GET') {
-      const [rows] = await conn.execute('SELECT * FROM pericia ORDER BY id DESC LIMIT 200');
+      const [rows] = await conn.execute('SELECT * FROM pericia ORDER BY dtins DESC LIMIT 200');
       await conn.end();
       const data = (rows as PericiaRow[]).map(mapPericiaRowToJudicialProcess);
       return res.status(200).json({ ok: true, data });
