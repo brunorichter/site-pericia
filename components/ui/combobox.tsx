@@ -67,12 +67,12 @@ export function Combobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full h-[52px] justify-between rounded-2xl border border-brand-cyan-500/40 bg-gradient-to-r from-brand-dark-secondary/70 via-brand-dark-secondary/40 to-brand-dark-secondary/70 px-4 text-left text-white hover:border-brand-cyan-300 focus-visible:ring-brand-cyan-500/60",
+              "w-full h-[52px] justify-between rounded-xl border border-slate-600/80 bg-slate-900/80 px-4 text-left text-white shadow-sm shadow-black/20 ring-1 ring-white/[0.03] hover:border-cyan-300/40 hover:bg-slate-900 focus-visible:ring-cyan-400/40",
               !selectedOption && "text-brand-cyan-100/80"
             )}
           >
             <div className="flex flex-col leading-tight text-left">
-              <span className="text-[11px] uppercase tracking-widest text-brand-cyan-200/70">
+              <span className="text-[11px] uppercase tracking-widest text-slate-400">
                 {label ?? "Opção"}
               </span>
               <span className="text-sm font-semibold">

@@ -221,10 +221,10 @@ const FeesChargedModal: React.FC<{
                     <input type="number" step="0.01" id="proposalAmount" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="Ex: 5000.00" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"/>
                 </div>
                 <div className="self-end flex space-x-2">
-                    <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-blue-300">
+                    <button type="submit" disabled={isSubmitting} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-300 hover:border-cyan-500 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
                         {editingProposal ? (isSubmitting ? 'Atualizando...' : 'Atualizar') : (isSubmitting ? 'Adicionando...' : 'Adicionar')}
                     </button>
-                    {editingProposal && <button type="button" onClick={resetForm} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md transition duration-300">Cancelar</button>}
+                    {editingProposal && <button type="button" onClick={resetForm} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition duration-300 hover:border-slate-400 hover:bg-slate-50">Cancelar</button>}
                 </div>
             </form>
             {apiError && <p className="text-sm text-red-600 mb-4">{apiError}</p>}
@@ -475,8 +475,8 @@ const FeesReceivedModal: React.FC<{
                 </div>
                 
                 <div className="md:col-span-4 self-end flex space-x-2">
-                    <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-blue-300">{editingPayment ? (isSubmitting ? 'Atualizando...' : 'Atualizar') : (isSubmitting ? 'Adicionando...' : 'Adicionar')}</button>
-                    {editingPayment && <button type="button" onClick={resetForm} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md transition duration-300">Cancelar</button>}
+                    <button type="submit" disabled={isSubmitting} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-300 hover:border-cyan-500 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">{editingPayment ? (isSubmitting ? 'Atualizando...' : 'Atualizar') : (isSubmitting ? 'Adicionando...' : 'Adicionar')}</button>
+                    {editingPayment && <button type="button" onClick={resetForm} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition duration-300 hover:border-slate-400 hover:bg-slate-50">Cancelar</button>}
                 </div>
             </form>
             {apiError && <p className="text-sm text-red-600 mb-4">{apiError}</p>}
@@ -802,7 +802,7 @@ const ProcessDetailPage: React.FC = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setFeesChargedModalOpen(true)}
-                                                    className="rounded-full bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-brand-cyan-900/40 shadow-lg hover:from-brand-cyan-400 hover:to-brand-cyan-500"
+                                                    className="rounded-lg border border-slate-600/80 bg-slate-900/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-100 shadow-sm shadow-black/20 transition hover:border-cyan-300/40 hover:bg-slate-900"
                                                 >
                                                     Gerenciar
                                                 </button>
@@ -817,7 +817,7 @@ const ProcessDetailPage: React.FC = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setFeesReceivedModalOpen(true)}
-                                                    className="rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-emerald-900/30 hover:from-emerald-300 hover:to-emerald-400"
+                                                    className="rounded-lg border border-emerald-300/25 bg-emerald-400/15 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-50 shadow-sm shadow-black/20 transition hover:border-emerald-300/45 hover:bg-emerald-400/20"
                                                 >
                                                     Gerenciar
                                                 </button>
@@ -846,14 +846,14 @@ const ProcessDetailPage: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={() => router.push('/processes')}
-                                        className="rounded-2xl border border-white/30 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:border-white/60"
+                                        className="rounded-xl border border-slate-500/80 bg-slate-900/30 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-slate-100 shadow-sm transition hover:border-slate-300/60 hover:bg-slate-800/60"
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="rounded-2xl bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-600 px-8 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-brand-cyan-900/40 shadow-xl transition hover:from-brand-cyan-400 hover:to-brand-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="rounded-xl border border-cyan-300/25 bg-cyan-400/15 px-8 py-3 text-sm font-semibold uppercase tracking-wide text-cyan-50 shadow-sm shadow-black/20 transition hover:border-cyan-300/45 hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {isSaving ? 'Salvando...' : 'Salvar Processo'}
                                     </button>

@@ -5,9 +5,11 @@ import { isRequestAuthenticated, redirectToLogin } from '../../lib/auth-server';
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { FileText, Plus } from 'lucide-react';
 import { getProcesses, getProcessPayments } from '../../services/processService';
-import { JudicialProcess, ProcessStatus, Payment, JusticeType, PericiaType } from '../../types';
+import { JudicialProcess, ProcessStatus, Payment } from '../../types';
 import { Combobox } from '../../components/ui/combobox';
+import ProcessCard from '../../components/ProcessCard';
 
 // --- Modal Component ---
 const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: ReactNode }> = ({ isOpen, onClose, title, children }) => {
@@ -197,8 +199,9 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
                     <button
                         onClick={handleGenerateReport}
                         disabled={isLoadingPayments}
-                        className="bg-brand-cyan-500 hover:bg-brand-cyan-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-brand-cyan-300 disabled:cursor-not-allowed"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-300 hover:border-cyan-400 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                     >
+                        <FileText className="h-4 w-4" aria-hidden="true" />
                         {isLoadingPayments ? 'Carregando...' : 'Gerar Relatório'}
                     </button>
                 </div>
@@ -245,17 +248,6 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({ isOpen, onClose
     );
 };
 
-const statusColors: { [key in ProcessStatus]: string } = {
-    [ProcessStatus.ENVIAR_PROPOSTA]: 'bg-yellow-100 text-yellow-800',
-    [ProcessStatus.ATRASO]: 'bg-red-100 text-red-800',
-    [ProcessStatus.AGUARDANDO_RESPOSTA]: 'bg-blue-100 text-blue-800',
-    [ProcessStatus.ELABORACAO_LAUDO]: 'bg-violet-100 text-violet-800',
-    [ProcessStatus.PERICIA_MARCADA]: 'bg-amber-100 text-amber-800',
-    [ProcessStatus.AGUARDANDO_PAGAMENTO]: 'bg-green-100 text-green-800',
-    [ProcessStatus.ARQUIVADO]: 'bg-gray-200 text-gray-800',
-    [ProcessStatus.RECUSADO]: 'bg-gray-200 text-gray-800',
-};
-
 const statusFilterOptions = [
     { value: 'all', label: 'Todos' },
     ...Object.values(ProcessStatus).map((status) => ({
@@ -263,64 +255,6 @@ const statusFilterOptions = [
         label: status,
     })),
 ] as { value: ProcessStatus | 'all'; label: string }[];
-
-const justiceTypeColors: { [key in JusticeType]: string } = {
-    [JusticeType.AJG]: 'bg-red-100 text-red-800',
-    [JusticeType.PARTICULAR]: 'bg-green-100 text-green-800',
-    [JusticeType.MISTO]: 'bg-cyan-100 text-cyan-800',
-};
-
-const periciaTypeColors: { [key in PericiaType]: string } = {
-    [PericiaType.LOCAL]: 'bg-yellow-100 text-yellow-800',
-    [PericiaType.DOCUMENTAL]: 'bg-blue-100 text-blue-800',
-};
-
-const Badge: React.FC<{ text: string; colorClass: string }> = ({ text, colorClass }) => (
-    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colorClass}`}>
-        {text}
-    </span>
-);
-
-// -- Label process number ---
-const ProcessNumberBadge: React.FC<{ number: string; className?: string }> = ({ number, className = "" }) => (
-    <h3 className={`inline-flex items-center gap-2 text-base font-semibold tracking-wide text-brand-cyan-50 bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-700 px-4 py-1 rounded-full shadow-lg shadow-brand-cyan-900/30 ${className}`}>
-        {/* <span className="text-xs uppercase text-white">Processo</span> */}
-        <span className="text-1xl uppercase text-white">{number}</span>
-    </h3>
-);
-
-// --- Process Card Component ---
-const ProcessCard: React.FC<{ process: JudicialProcess }> = ({ process }) => (
-    <Link href={`/processes/${process.id}`} className="block">
-        <div className="group relative min-h-[319px] max-h-[320px] overflow-hidden rounded-3xl border border-brand-cyan-900/40 bg-gradient-to-tr from-brand-cyan-600 via-cyan-900 to-brand-cyan-700 p-6 shadow-xl shadow-black/30 transition-all duration-500 hover:scale-105 hover:shadow-lg  hover:shadow-white/20">
-            <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-bl from-brand-cyan-600 via-cyan-900 to-brand-cyan-700" />
-            <div className="relative space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <ProcessNumberBadge number={process.processNumber} />
-                    <Badge text={process.status} colorClass={`${statusColors[process.status]} uppercase tracking-wide`} />
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                    <Badge text={process.justiceType} colorClass={justiceTypeColors[process.justiceType]} />
-                    <Badge text={process.periciaType} colorClass={periciaTypeColors[process.periciaType]} />
-                </div>
-                <div className="text-sm text-gray-200 space-y-2">
-                    <p><span className="text-brand-cyan-200 font-semibold">Autor:</span> {process.plaintiff}</p>
-                    <p><span className="text-brand-cyan-200 font-semibold">Réu:</span> {process.defendant}</p>
-                    <p className="flex justify-between text-xs md:text-sm text-brand-cyan-100/80">
-                        <span className="font-semibold">Cidade:</span>
-                        <span className="text-right text-white font-medium">{process.city}</span>
-                    </p>
-                </div>
-                <div className="flex justify-end">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-brand-cyan-400/40 bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-cyan-900/30 transition-colors duration-300 group-hover:from-brand-cyan-400 group-hover:to-brand-cyan-500">
-                        Ver Detalhes
-                        <span aria-hidden>{'>'}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </Link>
-);
 
 const ProcessListPage: React.FC = () => {
     const router = useRouter();
@@ -406,22 +340,24 @@ const ProcessListPage: React.FC = () => {
                         </div>
                         <button
                             onClick={() => setReportModalOpen(true)}
-                            className="bg-gradient-to-r from-brand-cyan-500 to-brand-cyan-600 hover:from-brand-cyan-400 hover:to-brand-cyan-500 text-white font-bold py-3 px-5 rounded-2xl transition duration-300 ease-in-out shadow-brand-cyan-900/40 shadow-lg"
+                            className="inline-flex h-[52px] items-center justify-center gap-2 rounded-xl border border-slate-600/80 bg-slate-900/80 px-5 text-sm font-semibold text-slate-100 shadow-sm shadow-black/20 ring-1 ring-white/[0.03] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
                         >
+                            <FileText className="h-4 w-4" aria-hidden="true" />
                             Relatório Pagamentos
                         </button>
                         <Link
                             href="/processes/new"
-                            className="bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 text-white font-bold py-3 px-5 rounded-2xl transition duration-300 ease-in-out shadow-emerald-900/30 shadow-lg text-center"
+                            className="inline-flex h-[52px] items-center justify-center gap-2 rounded-xl border border-emerald-300/25 bg-emerald-400/15 px-5 text-sm font-semibold text-emerald-50 shadow-sm shadow-black/20 ring-1 ring-white/[0.03] transition duration-300 hover:-translate-y-0.5 hover:border-emerald-300/45 hover:bg-emerald-400/20 focus:outline-none focus:ring-2 focus:ring-emerald-300/30"
                         >
-                            + Adicionar Processo
+                            <Plus className="h-4 w-4" aria-hidden="true" />
+                            Adicionar Processo
                         </Link>
                     </div>
                 </div>
                 {filteredProcesses.length ? (
-                    <div className="grid mt-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <div className="mt-4 flex flex-col gap-4">
                         {filteredProcesses.map(process => (
-                            <ProcessCard key={process.id} process={process} />
+                            <ProcessCard key={process.id} process={process} href={`/processes/${process.id}`} />
                         ))}
                     </div>
                 ) : (
